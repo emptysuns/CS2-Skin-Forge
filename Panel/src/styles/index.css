@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cs2-orange: #de9b35;
+  --cs2-blue: #5b9dd9;
+  --cs2-dark: #1a1a2e;
+  --cs2-darker: #0f0f1a;
+  --cs2-card: #16213e;
+  --cs2-border: #2a2a4a;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, var(--cs2-darker) 0%, var(--cs2-dark) 100%);
+  color: #e0e0e0;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cs2-darker);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--cs2-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cs2-orange);
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-500 text-white font-semibold rounded-lg
+           hover:from-amber-500 hover:to-orange-400 transition-all duration-300 shadow-lg
+           hover:shadow-amber-500/25 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-gray-700 text-gray-200 font-semibold rounded-lg
+           hover:bg-gray-600 transition-all duration-300 border border-gray-600
+           hover:border-gray-500 active:scale-95;
+  }
+
+  .card {
+    @apply bg-[var(--cs2-card)] rounded-xl p-4 border border-[var(--cs2-border)]
+           hover:border-amber-600/30 transition-all duration-300;
+  }
+
+  .input-field {
+    @apply w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg
+           text-white placeholder-gray-400 text-sm focus:outline-none focus:border-amber-500
+           focus:ring-1 focus:ring-amber-500 transition-all duration-300;
+  }
+}
+
+/* Custom titlebar drag region */
+[data-tauri-drag-region] {
+  -webkit-app-region: drag;
+}
+
+[data-tauri-drag-region] > * {
+  -webkit-app-region: no-drag;
+}

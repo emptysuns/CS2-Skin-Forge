@@ -1,0 +1,152 @@
+// This is a placeholder for the skins_en.json file
+// The actual file should contain all weapon skin definitions
+// Format: { "weapon_defindex": int, "paint": int, "legacy_model": bool }
+[
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 17,
+    "paint_name": "Blaze",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 37,
+    "paint_name": "Pilot",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 40,
+    "paint_name": "Hypnotic",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 61,
+    "paint_name": "Golden Koi",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 90,
+    "paint_name": "Cobalt Disruption",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 114,
+    "paint_name": "Heirloom",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 138,
+    "paint_name": "Meteorite",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 185,
+    "paint_name": "Hand Cannon",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 231,
+    "paint_name": "Naga",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 232,
+    "paint_name": "Conspiracy",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 237,
+    "paint_name": "Bronze Deco",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 273,
+    "paint_name": "Kumicho Dragon",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 296,
+    "paint_name": "Code Red",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 328,
+    "paint_name": "Mecha Industries",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 347,
+    "paint_name": "Light Rail",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 351,
+    "paint_name": "Emerald",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 397,
+    "paint_name": "Fennec Fox",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 425,
+    "paint_name": "Printstream",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 468,
+    "paint_name": "Trigger Discipline",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 469,
+    "paint_name": "Ocean Drive",
+    "legacy_model": false
+  },
+  {
+    "weapon_defindex": 1,
+    "weapon_name": "Desert Eagle",
+    "paint": 470,
+    "paint_name": "Sputnik",
+    "legacy_model": false
+  }
+]
