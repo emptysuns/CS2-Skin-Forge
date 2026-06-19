@@ -1,5 +1,4 @@
 import { Loadout } from '../utils/types';
-import { weapons } from '../data/weapons';
 import { knives } from '../data/knives';
 import { gloves, musicKits, knifePaints } from '../data/skins';
 
