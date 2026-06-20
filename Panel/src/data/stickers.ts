@@ -10462,3 +10462,16 @@ export const allStickers: StickerData[] = [
   { id: 11172, name: "Sticker | nettik (Holo) | Cologne 2026", image: "econ/stickers/cologne2026/sig_nettik_holo" },
   { id: 11173, name: "Sticker | nettik (Gold) | Cologne 2026", image: "econ/stickers/cologne2026/sig_nettik_gold" },
 ];
+
+// Build sticker categories from the image paths
+const _categories = new Set<string>();
+for (const s of allStickers) {
+  const parts = s.image.split('/');
+  if (parts.length >= 3) _categories.add(parts[2]);
+}
+export const stickerCategories: string[] = ['All', ...Array.from(_categories).sort()];
+
+// Build full Steam CDN URL from the sticker image path
+export function getStickerImageUrl(imagePath: string): string {
+  return `https://cdn.steamstatic.com/apps/730/icons/${imagePath}.png`;
+}

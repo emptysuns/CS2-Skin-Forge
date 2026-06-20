@@ -17,6 +17,7 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
   const [selectedWeapon, setSelectedWeapon] = useState<number | null>(null);
   const [activeStickerSlot, setActiveStickerSlot] = useState(0);
   const [stickerSearch, setStickerSearch] = useState('');
+  const [stickerLimit, setStickerLimit] = useState(100);
 
   const filteredWeapons = getWeaponsByCategory(selectedCategory);
   const isChinese = lang === 'schinese' || lang === 'tchinese';
@@ -290,7 +291,7 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
             </div>
             {allStickers.length > 200 && (
               <p className="text-[10px] text-gray-600 mt-1">
-                {stickerSearch || stickerCategory !== 'All'
+                {stickerSearch
                   ? `Showing ${filteredStickers.length} results`
                   : `Use search to find from ${allStickers.length} stickers`}
               </p>

@@ -103,7 +103,7 @@ export default function KnifePanel({ loadout, updateLoadout }: KnifePanelProps) 
           <div className="mb-4 p-3 bg-gray-800 rounded-lg space-y-3">
             <div>
               <label className="text-xs text-gray-400 block mb-1">
-                🎯 {t("weapon.wear") || "Wear"} ({wearLabels[wearValues.findIndex(v => Math.abs(v - wearValue) < 0.02)] || 'Custom'})
+                🎯 {t("knife.wear")} ({wearLabels[wearValues.findIndex(v => Math.abs(v - wearValue) < 0.02)] || 'Custom'})
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -136,7 +136,7 @@ export default function KnifePanel({ loadout, updateLoadout }: KnifePanelProps) 
 
             <div>
               <label className="text-xs text-gray-400 block mb-1">
-                🎲 {t("weapon.seed") || "Pattern Seed"} (0 = random)
+                🎲 {t("knife.seed")} (0 = random)
               </label>
               <div className="flex items-center gap-2">
                 <input
