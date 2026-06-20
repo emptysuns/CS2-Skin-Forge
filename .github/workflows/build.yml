@@ -88,6 +88,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build PlayerSkinMod plugin
+        run: |
+          dotnet build addons/counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.csproj -c Release
+          mkdir -p addons/counterstrikesharp/plugins/PlayerSkinMod/bin
+          cp addons/counterstrikesharp/plugins/PlayerSkinMod/bin/Release/net8.0/PlayerSkinMod.dll addons/counterstrikesharp/plugins/PlayerSkinMod/
+          ls -la addons/counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.dll
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -107,7 +119,7 @@ jobs:
           mkdir -p release-files
           find artifacts -type f \( -name "*.exe" -o -name "*.msi" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.dmg" \) -not -name "*.sig" -exec cp {} release-files/ \;
 
-          # Create addons zip with the CS2 plugin
+          # Create addons zip with the compiled CS2 plugin DLL
           cd addons
           zip -r ../release-files/addons.zip counterstrikesharp/
           cd ..
