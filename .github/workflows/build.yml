@@ -61,8 +61,8 @@ jobs:
           projectPath: './Panel'
           tagName: ${{ github.ref_name }}
           releaseName: 'CS2 Skin Mod ${{ github.ref_name }}'
-          releaseBody: |
-            See README for instructions.
+          releaseBody: 'See README for instructions.'
           releaseDraft: false
           prerelease: false
+          includeUpdaterJson: false
           args: '--target ${{ matrix.target }}'
