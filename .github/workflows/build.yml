@@ -46,6 +46,20 @@ jobs:
         run: npm ci
         working-directory: ./Panel
 
+      - name: Setup .NET SDK
+        if: matrix.platform == 'windows-latest'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build PlayerSkinMod plugin (Windows)
+        if: matrix.platform == 'windows-latest'
+        run: |
+          dotnet build addons/counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.csproj -c Release
+          mkdir -p addons/counterstrikesharp/plugins/PlayerSkinMod/bin
+          cp addons/counterstrikesharp/plugins/PlayerSkinMod/bin/Release/net8.0/PlayerSkinMod.dll addons/counterstrikesharp/plugins/PlayerSkinMod/
+          ls -la addons/counterstrikesharp/plugins/PlayerSkinMod/
+
       - name: Build Tauri app
         run: npx tauri build --target ${{ matrix.target }}
         working-directory: ./Panel

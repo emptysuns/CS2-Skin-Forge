@@ -193,6 +193,41 @@ fn detect_cs2_path() -> Result<Option<String>, String> {
     Ok(None)
 }
 
+#[tauri::command]
+fn deploy_addons() -> Result<String, String> {
+    let config_path = get_config_path();
+    if !config_path.exists() {
+        return Err("CS2 path not configured. Please set it in Settings.".to_string());
+    }
+    let data = fs::read_to_string(&config_path).map_err(|e| e.to_string())?;
+    let config: AppConfig = serde_json::from_str(&data).map_err(|e| e.to_string())?;
+    let cs2_path = config.cs2_path.ok_or_else(|| "CS2 path not configured.".to_string())?;
+
+    let target_dir = PathBuf::from(&cs2_path)
+        .join("addons").join("counterstrikesharp").join("plugins").join("PlayerSkinMod");
+    fs::create_dir_all(&target_dir).map_err(|e| e.to_string())?;
+
+    let resource_dir = std::env::current_exe()
+        .map_err(|e| e.to_string())?
+        .parent()
+        .ok_or_else(|| "Cannot find resource directory".to_string())?
+        .to_path_buf();
+
+    let files_to_deploy = ["PlayerSkinMod.json", "skins_en.json"];
+    let mut deployed = Vec::new();
+
+    for file in &files_to_deploy {
+        let src = resource_dir.join(file);
+        if src.exists() {
+            let dst = target_dir.join(file);
+            fs::copy(&src, &dst).map_err(|e| format!("Failed to copy {}: {}", file, e))?;
+            deployed.push(file.to_string());
+        }
+    }
+
+    Ok(format!("Deployed {} files to {}", deployed.join(", "), target_dir.display()))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -205,7 +240,8 @@ pub fn run() {
             save_config,
             save_loadout,
             load_loadout,
-            detect_cs2_path
+            detect_cs2_path,
+            deploy_addons
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

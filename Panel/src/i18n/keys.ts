@@ -70,6 +70,8 @@ export const EN = {
   "settings.cs2PathHint": "Path to game/csgo directory",
   "settings.browse": "Browse...",
   "settings.detect": "Auto Detect",
+  "settings.deployAddons": "Deploy Addons",
+  "settings.deployAddonsHint": "Copy plugin files to CS2 directory",
 
   // Status
   "status.applied": "Loadout applied! Changes will take effect on next spawn.",
@@ -77,6 +79,8 @@ export const EN = {
   "status.saved": "Loadout saved!",
   "status.error": "Error occurred",
   "status.reloaded": "Loadout reloaded! Respawn to apply.",
+  "status.deployed": "Addons deployed successfully!",
+  "status.deployError": "Failed to deploy addons",
 
   // Common
   "common.loading": "Loading...",

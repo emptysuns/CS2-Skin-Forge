@@ -30,13 +30,11 @@ export default function PreviewPanel({ loadout }: PreviewPanelProps) {
   return (
     <div className="card">
       <h3 className="text-sm font-semibold text-white mb-3 flex items-center space-x-2">
-        <span>👁️</span>
         <span>{t("preview.title")}</span>
       </h3>
 
       <div className="space-y-3">
         <div className="flex items-start space-x-2">
-          <span className="text-base">🔪</span>
           <div>
             <div className="text-xs font-medium text-gray-400">{t("preview.knife")}</div>
             <div className="text-xs text-white">{getKnifeName()}</div>
@@ -44,7 +42,6 @@ export default function PreviewPanel({ loadout }: PreviewPanelProps) {
         </div>
 
         <div className="flex items-start space-x-2">
-          <span className="text-base">🧤</span>
           <div>
             <div className="text-xs font-medium text-gray-400">{t("preview.gloves")}</div>
             <div className="text-xs text-white">{getGloveName()}</div>
@@ -52,7 +49,6 @@ export default function PreviewPanel({ loadout }: PreviewPanelProps) {
         </div>
 
         <div className="flex items-start space-x-2">
-          <span className="text-base">🎵</span>
           <div>
             <div className="text-xs font-medium text-gray-400">{t("preview.music")}</div>
             <div className="text-xs text-white">{getMusicKitName()}</div>
@@ -60,7 +56,6 @@ export default function PreviewPanel({ loadout }: PreviewPanelProps) {
         </div>
 
         <div className="flex items-start space-x-2">
-          <span className="text-base">🔫</span>
           <div>
             <div className="text-xs font-medium text-gray-400">{t("preview.weapons")}</div>
             <div className="text-xs text-white">
@@ -79,7 +74,7 @@ export default function PreviewPanel({ loadout }: PreviewPanelProps) {
               ? 'bg-green-500/20 text-green-400 border border-green-500/30'
               : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
           }`}>
-            {loadout.useRandom ? `🎲 ${t("preview.random")}` : `🎨 ${t("preview.custom")}`}
+            {loadout.useRandom ? t("preview.random") : t("preview.custom")}
           </span>
         </div>
       </div>

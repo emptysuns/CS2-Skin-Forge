@@ -65,7 +65,7 @@ export default function KnifePanel({ loadout, updateLoadout }: KnifePanelProps) 
           }
         `}
       >
-        <div className="text-sm font-semibold text-white">🎲 {t("preview.random")}</div>
+        <div className="text-sm font-semibold text-white">{t("preview.random")}</div>
         <div className="text-xs text-gray-400 mt-0.5">{t("knife.selectType")}</div>
       </button>
 
@@ -83,7 +83,7 @@ export default function KnifePanel({ loadout, updateLoadout }: KnifePanelProps) 
             `}
           >
             <img
-              src={getKnifeImageUrl(knife.codename)}
+              src={getKnifeImageUrl(knife.defindex)}
               alt={knife.name}
               className="w-full h-12 object-contain mb-1 opacity-90"
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
@@ -103,7 +103,7 @@ export default function KnifePanel({ loadout, updateLoadout }: KnifePanelProps) 
           <div className="mb-4 p-3 bg-gray-800 rounded-lg space-y-3">
             <div>
               <label className="text-xs text-gray-400 block mb-1">
-                🎯 {t("knife.wear")} ({wearLabels[wearValues.findIndex(v => Math.abs(v - wearValue) < 0.02)] || 'Custom'})
+                {t("knife.wear")} ({wearLabels[wearValues.findIndex(v => Math.abs(v - wearValue) < 0.02)] || 'Custom'})
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -136,7 +136,7 @@ export default function KnifePanel({ loadout, updateLoadout }: KnifePanelProps) 
 
             <div>
               <label className="text-xs text-gray-400 block mb-1">
-                🎲 {t("knife.seed")} (0 = random)
+                {t("knife.seed")} (0 = random)
               </label>
               <div className="flex items-center gap-2">
                 <input

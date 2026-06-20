@@ -12,6 +12,10 @@
   "bundle": {
     "active": true,
     "targets": ["nsis", "appimage", "deb", "dmg"],
+    "resources": [
+      "../../addons/counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.json",
+      "../../addons/counterstrikesharp/plugins/PlayerSkinMod/skins_en.json"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

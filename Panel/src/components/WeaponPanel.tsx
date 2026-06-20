@@ -173,11 +173,11 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
           {/* Wear & Seed controls */}
           {loadout.weaponPaints[selectedWeapon] !== undefined && (
             <div className="mt-4 border-t border-gray-700 pt-3">
-              <h4 className="text-xs font-semibold text-gray-300 mb-2">⚙️ {t("weapon.settings")}</h4>
+              <h4 className="text-xs font-semibold text-gray-300 mb-2">{t("weapon.settings")}</h4>
               <div className="space-y-3 p-2 bg-gray-800 rounded-lg">
                 <div>
                   <label className="text-xs text-gray-400 block mb-1">
-                    🎯 {t("weapon.wear")} ({wearLabels[wearValues.findIndex(v => Math.abs(v - (loadout.weaponWears[selectedWeapon] ?? 0.01)) < 0.02)] || 'Custom'})
+                    {t("weapon.wear")} ({wearLabels[wearValues.findIndex(v => Math.abs(v - (loadout.weaponWears[selectedWeapon] ?? 0.01)) < 0.02)] || 'Custom'})
                   </label>
                   <div className="flex items-center gap-2">
                     <input
@@ -210,7 +210,7 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
 
                 <div>
                   <label className="text-xs text-gray-400 block mb-1">
-                    🎲 {t("weapon.seed")} (0 = random)
+                    {t("weapon.seed")} (0 = random)
                   </label>
                   <div className="flex items-center gap-2">
                     <input
@@ -231,7 +231,7 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
 
           {/* Sticker Section */}
           <div className="mt-4 border-t border-gray-700 pt-3">
-            <h4 className="text-xs font-semibold text-gray-300 mb-2">🎨 Stickers</h4>
+            <h4 className="text-xs font-semibold text-gray-300 mb-2">Stickers</h4>
             <div className="flex gap-1.5 mb-2">
               {[0,1,2,3,4].map(slot => {
                 const stickers = loadout.weaponStickers[selectedWeapon] || [];

@@ -10462,5 +10462,6 @@ export const stickerCategories: string[] = ['All', ...Array.from(_categories).so
 
 // Build full Steam CDN URL from the sticker image path
 export function getStickerImageUrl(imagePath: string): string {
-  return `https://cdn.steamstatic.com/apps/730/icons/${imagePath}.png`;
+  if (imagePath.startsWith('http')) return imagePath;
+  return `https://community.akamai.steamstatic.com/economy/image/${imagePath}`;
 }

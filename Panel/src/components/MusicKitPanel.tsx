@@ -30,11 +30,11 @@ export default function MusicKitPanel({ loadout, updateLoadout }: MusicKitPanelP
           }
         `}
       >
-        <div className="text-sm font-semibold text-white">🎵 {t("preview.random")}</div>
+        <div className="text-sm font-semibold text-white">{t("preview.random")}</div>
         <div className="text-xs text-gray-400 mt-0.5">{t("music.title")}</div>
       </button>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
         {musicKits.map(kit => (
           <button
             key={kit.id}

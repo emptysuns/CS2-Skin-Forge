@@ -45,7 +45,7 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
           }
         `}
       >
-        <div className="text-sm font-semibold text-white">🧤 {t("preview.random")}</div>
+        <div className="text-sm font-semibold text-white">{t("preview.random")}</div>
         <div className="text-xs text-gray-400 mt-0.5">{t("glove.selectType")}</div>
       </button>
 

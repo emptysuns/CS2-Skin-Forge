@@ -31,7 +31,7 @@ export default function AgentPanel({ loadout, updateLoadout }: AgentPanelProps) 
             selectedTeam === 'ct' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
           }`}
         >
-          🔵 {t("agent.ct")}
+          {t("agent.ct")}
         </button>
         <button
           onClick={() => setSelectedTeam('t')}
@@ -39,7 +39,7 @@ export default function AgentPanel({ loadout, updateLoadout }: AgentPanelProps) 
             selectedTeam === 't' ? 'bg-orange-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
           }`}
         >
-          🟠 {t("agent.t")}
+          {t("agent.t")}
         </button>
       </div>
 
@@ -53,11 +53,11 @@ export default function AgentPanel({ loadout, updateLoadout }: AgentPanelProps) 
           }
         `}
       >
-        <div className="text-sm font-semibold text-white">👤 {t("preview.random")}</div>
+        <div className="text-sm font-semibold text-white">{t("preview.random")}</div>
         <div className="text-xs text-gray-400 mt-0.5">{t("agent.title")}</div>
       </button>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-64 overflow-y-auto">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
         {models.map((model) => (
           <button
             key={model.id}

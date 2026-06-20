@@ -13,10 +13,13 @@ export default function SettingsPanel({ isOpen, onClose, onConfigSaved }: Settin
   const [config, setConfig] = useState<AppConfig>({ language: lang, cs2Path: null });
   const [detecting, setDetecting] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deploying, setDeploying] = useState(false);
+  const [deployResult, setDeployResult] = useState<{ success: boolean; message: string } | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       api.getConfig().then(setConfig).catch(console.error);
+      setDeployResult(null);
     }
   }, [isOpen]);
 
@@ -44,6 +47,18 @@ export default function SettingsPanel({ isOpen, onClose, onConfigSaved }: Settin
       console.error("Failed to save config:", e);
     }
     setSaving(false);
+  };
+
+  const handleDeploy = async () => {
+    setDeploying(true);
+    setDeployResult(null);
+    try {
+      const result = await api.deployAddons();
+      setDeployResult({ success: true, message: result });
+    } catch (e) {
+      setDeployResult({ success: false, message: String(e) });
+    }
+    setDeploying(false);
   };
 
   if (!isOpen) return null;
@@ -79,7 +94,7 @@ export default function SettingsPanel({ isOpen, onClose, onConfigSaved }: Settin
                     : "bg-gray-800/50 border border-gray-700/50 text-gray-300 hover:bg-gray-700/50"
                 }`}
               >
-                <span className="text-lg">{l.flag}</span>
+                <span className="text-xs font-mono bg-gray-700 px-1 rounded">{l.flag}</span>
                 <span>{l.label}</span>
               </button>
             ))}
@@ -108,6 +123,26 @@ export default function SettingsPanel({ isOpen, onClose, onConfigSaved }: Settin
               {detecting ? "..." : t("settings.detect")}
             </button>
           </div>
+        </div>
+
+        {/* Deploy Addons */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-300">
+            {t("settings.deployAddons")}
+          </label>
+          <p className="text-xs text-gray-500">{t("settings.deployAddonsHint")}</p>
+          <button
+            onClick={handleDeploy}
+            disabled={deploying}
+            className="btn-secondary w-full text-sm"
+          >
+            {deploying ? t("common.loading") : t("settings.deployAddons")}
+          </button>
+          {deployResult && (
+            <p className={`text-xs ${deployResult.success ? 'text-green-400' : 'text-red-400'}`}>
+              {deployResult.success ? t("status.deployed") : t("status.deployError")}
+            </p>
+          )}
         </div>
 
         {/* Actions */}

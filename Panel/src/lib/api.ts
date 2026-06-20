@@ -39,4 +39,5 @@ export const api = {
   loadLoadout: (slot: number) =>
     invoke<Loadout | null>("load_loadout", { slot }),
   detectCs2Path: () => invoke<string | null>("detect_cs2_path"),
+  deployAddons: () => invoke<string>("deploy_addons"),
 };

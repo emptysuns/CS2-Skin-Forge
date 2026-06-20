@@ -177,7 +177,13 @@ public static class WeaponService
 
             item.Initialized = true;
 
+            // Force a re-render of the glove model so the new mesh actually shows.
             pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,0");
+            Server.NextFrame(() =>
+            {
+                if (pawn.IsValid)
+                    pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
+            });
         }
         catch (Exception ex)
         {

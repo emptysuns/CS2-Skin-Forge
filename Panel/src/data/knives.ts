@@ -5,8 +5,10 @@ export interface Knife {
   codename: string;
 }
 
-export function getKnifeImageUrl(codename: string): string {
-  return `https://cdn.steamstatic.com/apps/730/icons/econ/default_generated/weapon_knife_${codename}_light_large.png`;
+import { getWeaponDefaultImage } from './weaponImages';
+
+export function getKnifeImageUrl(defindex: number): string {
+  return getWeaponDefaultImage(defindex);
 }
 
 export const knives: Knife[] = [
