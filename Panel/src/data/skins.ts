@@ -321,7 +321,7 @@ export const weaponPaints: Record<number, { id: number; name: string }[]> = {
     { id: 212, name: 'Redline' },
     { id: 227, name: 'Asiimov' },
     { id: 251, name: 'Dragon Lore' },
-    { id: 259, name: 'Man-o\'-war' },
+    { id: 259, name: 'Man-o\'war' },
     { id: 279, name: 'Hyper Beast' },
     { id: 344, name: 'Elite Build' },
     { id: 395, name: 'Fever Dream' },
@@ -390,3 +390,34 @@ export const weaponPaints: Record<number, { id: number; name: string }[]> = {
     { id: 443, name: 'The Traitor' },
   ],
 };
+
+export interface StickerData {
+  id: number;
+  name: string;
+  image: string;
+}
+
+// Popular stickers (top ~50 most popular/valuable stickers)
+export const popularStickers: StickerData[] = [
+  { id: 61, name: 'Katowice 2014 - Titan (Holo)', image: 'econ/stickers/cologne2014/titan_holo' },
+  { id: 57, name: 'Katowice 2014 - iBUYPOWER (Holo)', image: 'econ/stickers/katowice2014/ibp_holo' },
+  { id: 48, name: 'Katowice 2014 - Reason Gaming (Holo)', image: 'econ/stickers/katowice2014/reason_holo' },
+  { id: 2, name: 'Bomb Code', image: 'econ/stickers/bomb_code' },
+  { id: 6, name: 'Howling Dawn', image: 'econ/stickers/community01' },
+  { id: 4, name: 'Crown (Foil)', image: 'econ/stickers/community02' },
+  { id: 16, name: 'Headhunter (Foil)', image: 'econ/stickers/community03' },
+  { id: 29, name: 'Flammable (Foil)', image: 'econ/stickers/community04' },
+  { id: 100, name: 'Atlanta 2017 - FaZe (Holo)', image: 'econ/stickers/atlanta2017/faze_holo' },
+  { id: 162, name: 'Boston 2018 - Cloud9 (Holo)', image: 'econ/stickers/boston2018/cloud9_holo' },
+  { id: 723, name: 'Stockholm 2021 - Natus Vincere (Holo)', image: 'econ/stickers/stockholm2021/natus_vincere_holo' },
+  { id: 740, name: 'Antwerp 2022 - FaZe (Holo)', image: 'econ/stickers/antwerp2022/faze_holo' },
+  { id: 866, name: 'Paris 2023 - Team Vitality (Holo)', image: 'econ/stickers/paris2023/vitality_holo' },
+  { id: 18, name: 'Splyce (Holo)', image: 'econ/stickers/mlg_columbus2016/splyce_holo' },
+  { id: 420, name: 'Doppler (Phase 2) sticker', image: 'econ/stickers/community01' },
+  { id: 1074, name: 'Copenhagen 2024 - Natus Vincere (Holo)', image: 'econ/stickers/copenhagen2024/natus_vincere_holo' },
+  { id: 1117, name: 'Shanghai 2024 - Team Spirit (Holo)', image: 'econ/stickers/shanghai2024/team_spirit_holo' },
+];
+
+export function getStickerImageUrl(imagePath: string): string {
+  return `https://cdn.steamstatic.com/apps/730/icons/${imagePath}.png`;
+}

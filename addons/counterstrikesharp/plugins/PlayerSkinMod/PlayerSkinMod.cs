@@ -269,7 +269,19 @@ public class PlayerSkinModPlugin : BasePlugin
         public int AgentModel { get; set; } = -1;
         public int MusicKit { get; set; } = -1;
         public Dictionary<ushort, int> WeaponPaints { get; set; } = new();
+        public Dictionary<ushort, List<StickerInfo>> WeaponStickers { get; set; } = new();
         public bool UseRandom { get; set; } = true;
+    }
+
+    private class StickerInfo
+    {
+        public uint Id { get; set; }
+        public uint Schema { get; set; } = 0;
+        public float OffsetX { get; set; } = 0f;
+        public float OffsetY { get; set; } = 0f;
+        public float Wear { get; set; } = 0f;
+        public float Scale { get; set; } = 1f;
+        public float Rotation { get; set; } = 0f;
     }
 
     public override void Load(bool hotReload)
@@ -564,6 +576,34 @@ public class PlayerSkinModPlugin : BasePlugin
         }
 
         ApplySkinToWeapon(weapon, defIndex, paint);
+
+        // Apply stickers if configured
+        if (loadout.WeaponStickers.TryGetValue(defIndex, out var stickers) && stickers.Count > 0)
+            ApplyStickers(weapon, stickers);
+    }
+
+    private static float UIntToFloat(uint value) => BitConverter.Int32BitsToSingle((int)value);
+
+    private void ApplyStickers(CBasePlayerWeapon weapon, List<StickerInfo> stickers)
+    {
+        if (_setAttrByName == null || stickers.Count == 0) return;
+        var item = weapon.AttributeManager?.Item;
+        if (item == null) return;
+
+        for (int i = 0; i < Math.Min(stickers.Count, 5); i++)
+        {
+            var s = stickers[i];
+            if (s.Id == 0) continue;
+            var handle = item.NetworkedDynamicAttributes.Handle;
+            _setAttrByName.Invoke(handle, $"sticker slot {i} id", UIntToFloat(s.Id));
+            if (s.OffsetX != 0 || s.OffsetY != 0)
+                _setAttrByName.Invoke(handle, $"sticker slot {i} schema", 0f);
+            _setAttrByName.Invoke(handle, $"sticker slot {i} offset x", s.OffsetX);
+            _setAttrByName.Invoke(handle, $"sticker slot {i} offset y", s.OffsetY);
+            _setAttrByName.Invoke(handle, $"sticker slot {i} wear", s.Wear);
+            _setAttrByName.Invoke(handle, $"sticker slot {i} scale", s.Scale);
+            _setAttrByName.Invoke(handle, $"sticker slot {i} rotation", s.Rotation);
+        }
     }
 
     private void ApplySkinToWeapon(CEconEntity weapon, ushort defIndex, int paintKit)
@@ -768,6 +808,28 @@ public class PlayerSkinModPlugin : BasePlugin
                     {
                         if (ushort.TryParse(wp.Name, out ushort defIndex) && wp.Value.GetInt32() >= 0)
                             loadout.WeaponPaints[defIndex] = wp.Value.GetInt32();
+                    }
+                }
+
+                if (loadoutEl.TryGetProperty("weaponStickers", out var wsEl))
+                {
+                    foreach (var ws in wsEl.EnumerateObject())
+                    {
+                        if (!ushort.TryParse(ws.Name, out ushort defIdx)) continue;
+                        var stickerList = new List<StickerInfo>();
+                        foreach (var sEl in ws.Value.EnumerateArray())
+                        {
+                            var si = new StickerInfo();
+                            if (sEl.TryGetProperty("id", out var idEl)) si.Id = (uint)idEl.GetInt32();
+                            if (sEl.TryGetProperty("offsetX", out var oxEl)) si.OffsetX = (float)oxEl.GetDouble();
+                            if (sEl.TryGetProperty("offsetY", out var oyEl)) si.OffsetY = (float)oyEl.GetDouble();
+                            if (sEl.TryGetProperty("wear", out var wEl)) si.Wear = (float)wEl.GetDouble();
+                            if (sEl.TryGetProperty("scale", out var scEl)) si.Scale = (float)scEl.GetDouble();
+                            if (sEl.TryGetProperty("rotation", out var rEl)) si.Rotation = (float)rEl.GetDouble();
+                            stickerList.Add(si);
+                        }
+                        if (stickerList.Count > 0)
+                            loadout.WeaponStickers[defIdx] = stickerList;
                     }
                 }
 

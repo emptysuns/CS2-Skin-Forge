@@ -1,8 +1,18 @@
 import { invoke } from "@tauri-apps/api/core";
 
 // Types matching the Rust backend
+export interface StickerInfo {
+  id: number;
+  offsetX?: number;
+  offsetY?: number;
+  wear?: number;
+  scale?: number;
+  rotation?: number;
+}
+
 export interface Loadout {
   weaponPaints: Record<number, number>;
+  weaponStickers: Record<number, StickerInfo[]>;
   knifeIndex: number;
   knifePaint: number;
   gloveIndex: number;

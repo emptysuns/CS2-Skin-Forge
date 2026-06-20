@@ -20,6 +20,7 @@ function App() {
   const [_config, setConfig] = useState<AppConfig | null>(null);
   const [loadout, setLoadout] = useState<Loadout>({
     weaponPaints: {},
+    weaponStickers: {},
     knifeIndex: -1,
     knifePaint: -1,
     gloveIndex: -1,
@@ -68,6 +69,7 @@ function App() {
   const handleReset = () => {
     setLoadout({
       weaponPaints: {},
+      weaponStickers: {},
       knifeIndex: -1,
       knifePaint: -1,
       gloveIndex: -1,

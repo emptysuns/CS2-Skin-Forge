@@ -3,9 +3,30 @@ use std::fs;
 use std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct StickerInfo {
+    pub id: u32,
+    #[serde(default, rename = "offsetX")]
+    pub offset_x: f32,
+    #[serde(default, rename = "offsetY")]
+    pub offset_y: f32,
+    #[serde(default)]
+    pub wear: f32,
+    #[serde(default = "default_scale")]
+    pub scale: f32,
+    #[serde(default)]
+    pub rotation: f32,
+}
+
+fn default_scale() -> f32 {
+    1.0
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Loadout {
     #[serde(rename = "weaponPaints")]
     pub weapon_paints: std::collections::HashMap<u16, i32>,
+    #[serde(rename = "weaponStickers", default)]
+    pub weapon_stickers: std::collections::HashMap<u16, Vec<StickerInfo>>,
     #[serde(rename = "knifeIndex")]
     pub knife_index: i32,
     #[serde(rename = "knifePaint")]
