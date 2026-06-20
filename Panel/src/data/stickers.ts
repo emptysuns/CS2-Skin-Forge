@@ -6,18 +6,7 @@ export interface StickerData {
   id: number;
   name: string;
   image: string;
-  category?: string;
-  tournament?: string;
 }
-
-export function getStickerImageUrl(imagePath: string): string {
-  // If already a full URL, return as-is
-  if (imagePath.startsWith('http')) return imagePath;
-  // Otherwise construct the CDN URL
-  return `https://cdn.steamstatic.com/apps/730/icons/${imagePath}.png`;
-}
-
-export const stickerCategories = ['All', 'Team', 'Tournament', 'Community', 'Other'];
 
 export const allStickers: StickerData[] = [
   { id: 1, name: "Sticker | Shooter", image: "econ/stickers/dreamhack/dh_gologo1" },

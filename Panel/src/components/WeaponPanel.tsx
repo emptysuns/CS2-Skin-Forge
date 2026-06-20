@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Loadout } from '../utils/types';
 import { weapons, weaponCategories, getWeaponsByCategory } from '../data/weapons';
 import { weaponPaints } from '../data/skins';
@@ -88,15 +88,23 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
   };
 
   // Filter stickers based on search
-  const filteredStickers = useMemo(() => {
+  const allFilteredStickers = useMemo(() => {
     let filtered = allStickers;
     if (stickerSearch.trim()) {
       const query = stickerSearch.toLowerCase();
       filtered = filtered.filter(s => s.name.toLowerCase().includes(query));
     }
-    // Limit to 200 for performance
-    return filtered.slice(0, 200);
+    return filtered;
   }, [stickerSearch]);
+
+  // Reset limit when search changes
+  useEffect(() => {
+    setStickerLimit(100);
+  }, [stickerSearch]);
+
+  const filteredStickers = useMemo(() => {
+    return allFilteredStickers.slice(0, stickerLimit);
+  }, [allFilteredStickers, stickerLimit]);
 
   const wearLabels = ['FN', 'MW', 'FT', 'WW', 'BS'];
   const wearValues = [0.01, 0.07, 0.15, 0.38, 0.45];
@@ -165,11 +173,11 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
           {/* Wear & Seed controls */}
           {loadout.weaponPaints[selectedWeapon] !== undefined && (
             <div className="mt-4 border-t border-gray-700 pt-3">
-              <h4 className="text-xs font-semibold text-gray-300 mb-2">⚙️ {t("weapon.settings") || "Skin Settings"}</h4>
+              <h4 className="text-xs font-semibold text-gray-300 mb-2">⚙️ {t("weapon.settings")}</h4>
               <div className="space-y-3 p-2 bg-gray-800 rounded-lg">
                 <div>
                   <label className="text-xs text-gray-400 block mb-1">
-                    🎯 {t("weapon.wear") || "Wear"} ({wearLabels[wearValues.findIndex(v => Math.abs(v - (loadout.weaponWears[selectedWeapon] ?? 0.01)) < 0.02)] || 'Custom'})
+                    🎯 {t("weapon.wear")} ({wearLabels[wearValues.findIndex(v => Math.abs(v - (loadout.weaponWears[selectedWeapon] ?? 0.01)) < 0.02)] || 'Custom'})
                   </label>
                   <div className="flex items-center gap-2">
                     <input
@@ -202,7 +210,7 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
 
                 <div>
                   <label className="text-xs text-gray-400 block mb-1">
-                    🎲 {t("weapon.seed") || "Pattern Seed"} (0 = random)
+                    🎲 {t("weapon.seed")} (0 = random)
                   </label>
                   <div className="flex items-center gap-2">
                     <input
@@ -264,7 +272,7 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
             <div className="flex gap-2 mb-2">
               <input
                 type="text"
-                placeholder={t("weapon.stickerSearch") || "Search stickers..."}
+                placeholder={t("weapon.stickerSearch")}
                 value={stickerSearch}
                 onChange={(e) => setStickerSearch(e.target.value)}
                 className="flex-1 bg-gray-700 text-white text-xs rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-500"
@@ -289,11 +297,17 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
                 </div>
               )}
             </div>
-            {allStickers.length > 200 && (
+            {allFilteredStickers.length > stickerLimit && (
+              <button
+                onClick={() => setStickerLimit(prev => prev + 100)}
+                className="w-full mt-2 py-1.5 text-xs text-gray-300 bg-gray-700 hover:bg-gray-600 rounded transition-all"
+              >
+                Load More ({filteredStickers.length} / {allFilteredStickers.length})
+              </button>
+            )}
+            {!stickerSearch && allFilteredStickers.length > 100 && (
               <p className="text-[10px] text-gray-600 mt-1">
-                {stickerSearch
-                  ? `Showing ${filteredStickers.length} results`
-                  : `Use search to find from ${allStickers.length} stickers`}
+                {`Showing ${filteredStickers.length} of ${allFilteredStickers.length} stickers - use search to find specific stickers`}
               </p>
             )}
           </div>
