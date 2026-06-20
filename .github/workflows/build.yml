@@ -58,6 +58,7 @@ jobs:
           path: |
             Panel/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/**/*.exe
             Panel/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/**/*.msi
+          if-no-files-found: error
 
       - name: Upload Linux artifacts
         if: matrix.platform == 'ubuntu-latest'
@@ -67,6 +68,7 @@ jobs:
           path: |
             Panel/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/**/*.AppImage
             Panel/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/**/*.deb
+          if-no-files-found: error
 
       - name: Upload macOS artifacts
         if: matrix.platform == 'macos-latest'
@@ -76,6 +78,7 @@ jobs:
           path: |
             Panel/src-tauri/target/aarch64-apple-darwin/release/bundle/**/*.dmg
             Panel/src-tauri/target/aarch64-apple-darwin/release/bundle/**/*.app
+          if-no-files-found: error
 
   release:
     needs: build
@@ -91,8 +94,31 @@ jobs:
         with:
           path: artifacts
 
-      - name: List artifacts
-        run: find artifacts -type f -not -name "*.sig"
+      - name: List all artifact files
+        run: |
+          echo "=== All artifact files ==="
+          find artifacts -type f | sort
+          echo ""
+          echo "=== Executable/bundle files (excluding .sig) ==="
+          find artifacts -type f -not -name "*.sig" | sort
+
+      - name: Collect release files
+        id: collect
+        run: |
+          mkdir -p release-files
+          find artifacts -type f \( -name "*.exe" -o -name "*.msi" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.dmg" \) -not -name "*.sig" -exec cp {} release-files/ \;
+          find artifacts -type d -name "*.app" -exec cp -r {} release-files/ \; 2>/dev/null || true
+          echo "=== Files to release ==="
+          ls -la release-files/
+          echo "file_count=$(ls release-files/ | wc -l)" >> $GITHUB_OUTPUT
+
+      - name: Verify release files exist
+        run: |
+          if [ "${{ steps.collect.outputs.file_count }}" -eq "0" ]; then
+            echo "ERROR: No release files found!"
+            exit 1
+          fi
+          echo "Found ${{ steps.collect.outputs.file_count }} release files"
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -113,7 +139,5 @@ jobs:
             一个用于 CS2 的本地皮肤自定义插件。详细说明请查看 [中文文档](https://github.com/${{ github.repository }}/blob/main/README_CN.md)。
           draft: false
           prerelease: false
-          files: |
-            artifacts/release-windows/*
-            artifacts/release-linux/*
-            artifacts/release-macos/*
+          replace_artifacts: true
+          files: release-files/*
