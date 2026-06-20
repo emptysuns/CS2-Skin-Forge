@@ -107,13 +107,29 @@ public class PlayerSkinModPlugin : BasePlugin
         [64] = [12, 27, 37, 40, 123, 522, 523, 595, 683, 701, 721, 798, 843, 866, 892, 924, 952, 1011, 1047, 1145, 1232, 1237, 1276, 1293, 1363, 1389],
     };
 
-    // Knife options
+    // Knife options — must match the panel's knife list (Panel/src/data/knives.ts)
     private static readonly (string DesignerName, ushort DefIndex, string ModelPath)[] Knives =
     {
         ("weapon_bayonet",               500, "weapons/models/knife/bayonet/weapon_bayonet.vmdl"),
+        ("weapon_knife_css",             503, "weapons/models/knife/css/weapon_knife_css.vmdl"),
+        ("weapon_knife_flip",            505, "weapons/models/knife/flip/weapon_knife_flip.vmdl"),
+        ("weapon_knife_gut",             506, "weapons/models/knife/gut/weapon_knife_gut.vmdl"),
         ("weapon_knife_karambit",        507, "weapons/models/knife/karambit/weapon_knife_karambit.vmdl"),
         ("weapon_knife_m9_bayonet",      508, "weapons/models/knife/m9_bayonet/weapon_knife_m9_bayonet.vmdl"),
+        ("weapon_knife_tactical",        509, "weapons/models/knife/tactical/weapon_knife_tactical.vmdl"),
+        ("weapon_knife_falchion",        512, "weapons/models/knife/falchion/weapon_knife_falchion.vmdl"),
+        ("weapon_knife_survival_bowie",  514, "weapons/models/knife/survival_bowie/weapon_knife_survival_bowie.vmdl"),
         ("weapon_knife_butterfly",       515, "weapons/models/knife/butterfly/weapon_knife_butterfly.vmdl"),
+        ("weapon_knife_push",            516, "weapons/models/knife/push/weapon_knife_push.vmdl"),
+        ("weapon_knife_cord",            517, "weapons/models/knife/cord/weapon_knife_cord.vmdl"),
+        ("weapon_knife_canis",           518, "weapons/models/knife/canis/weapon_knife_canis.vmdl"),
+        ("weapon_knife_ursus",           519, "weapons/models/knife/ursus/weapon_knife_ursus.vmdl"),
+        ("weapon_knife_gypsy_jackknife", 520, "weapons/models/knife/gypsy_jackknife/weapon_knife_gypsy_jackknife.vmdl"),
+        ("weapon_knife_outdoor",         521, "weapons/models/knife/outdoor/weapon_knife_outdoor.vmdl"),
+        ("weapon_knife_stiletto",        522, "weapons/models/knife/stiletto/weapon_knife_stiletto.vmdl"),
+        ("weapon_knife_widowmaker",      523, "weapons/models/knife/widowmaker/weapon_knife_widowmaker.vmdl"),
+        ("weapon_knife_skeleton",        525, "weapons/models/knife/skeleton/weapon_knife_skeleton.vmdl"),
+        ("weapon_knife_kukri",           526, "weapons/models/knife/kukri/weapon_knife_kukri.vmdl"),
     };
 
     private static readonly Dictionary<string, ushort> KnifeDefIndexByName = new()
@@ -262,9 +278,13 @@ public class PlayerSkinModPlugin : BasePlugin
 
         // Set up loadout file path - store in the plugin directory
         _loadoutFilePath = Path.Combine(ModuleDirectory, "player_loadout.json");
+        Logger.LogInformation($"[PlayerSkinMod] Loadout file path: {_loadoutFilePath}");
+        Logger.LogInformation($"[PlayerSkinMod] File exists: {File.Exists(_loadoutFilePath)}");
+        Logger.LogInformation($"[PlayerSkinMod] Plugin directory: {ModuleDirectory}");
 
         // Load any saved loadout from the panel
         LoadLoadoutFromFile();
+        Logger.LogInformation($"[PlayerSkinMod] Loaded loadouts: {_playerLoadouts.Count} entries");
 
         // Set up a file watcher to reload when the panel saves a new loadout
         try
@@ -299,6 +319,7 @@ public class PlayerSkinModPlugin : BasePlugin
                 RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
                     ? "55 48 89 E5 41 57 41 56 49 89 FE 41 55 41 54 53 48 89 F3 48 83 EC ? F3 0F 11 85"
                     : "40 53 55 41 56 48 81 EC 90 00 00 00");
+            Logger.LogInformation($"[PlayerSkinMod] SetOrAddAttributeValueByName loaded: {_setAttrByName != null}");
         }
         catch (Exception ex)
         {
@@ -339,8 +360,19 @@ public class PlayerSkinModPlugin : BasePlugin
         if (player == null || !player.IsValid) return;
         // Reload loadout from file in case panel saved while in-game
         LoadLoadoutFromFile();
-        player.PrintToChat(" \x04[PlayerSkinMod]\x01 Loadout reloaded from panel!");
-        player.PrintToChat(" \x04[PlayerSkinMod]\x10 Respawn to apply new skins.");
+
+        // Diagnostic info
+        var loadout = GetOrCreateLoadout(player.Slot);
+        player.PrintToChat(" \x04[PlayerSkinMod]\x01 --- Diagnostic Info ---");
+        player.PrintToChat($" \x04[PlayerSkinMod]\x01 Slot: {player.Slot}");
+        player.PrintToChat($" \x04[PlayerSkinMod]\x01 Loadout file: {_loadoutFilePath}");
+        player.PrintToChat($" \x04[PlayerSkinMod]\x01 File exists: {File.Exists(_loadoutFilePath)}");
+        player.PrintToChat($" \x04[PlayerSkinMod]\x01 Loaded loadouts: {_playerLoadouts.Count}");
+        player.PrintToChat($" \x04[PlayerSkinMod]\x01 Knife: {loadout.KnifeIndex}, Glove: {loadout.GloveIndex}, Agent: {loadout.AgentModel}");
+        player.PrintToChat($" \x04[PlayerSkinMod]\x01 UseRandom: {loadout.UseRandom}, Weapons: {loadout.WeaponPaints.Count}");
+        player.PrintToChat($" \x04[PlayerSkinMod]\x01 SetAttrByName: {_setAttrByName != null}");
+        player.PrintToChat(" \x04[PlayerSkinMod]\x01 --- End Diagnostic ---");
+        player.PrintToChat(" \x04[PlayerSkinMod]\x10 Respawn to apply skins.");
     }
 
     private void OnSkinRandomCommand(CCSPlayerController? player, CommandInfo command)
@@ -387,6 +419,7 @@ public class PlayerSkinModPlugin : BasePlugin
             return HookResult.Continue;
 
         var loadout = GetOrCreateLoadout(player.Slot);
+        Logger.LogInformation($"[PlayerSkinMod] Player {player.Slot} spawned. Loadout: knife={loadout.KnifeIndex}, glove={loadout.GloveIndex}, agent={loadout.AgentModel}, music={loadout.MusicKit}, random={loadout.UseRandom}, weapons={loadout.WeaponPaints.Count}, setAttrByName={_setAttrByName != null}");
 
         if (!_playerModels.TryGetValue(player.Slot, out string? model))
         {
@@ -683,7 +716,13 @@ public class PlayerSkinModPlugin : BasePlugin
             }
 
             var json = File.ReadAllText(_loadoutFilePath);
-            if (string.IsNullOrWhiteSpace(json)) return;
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                Logger.LogInformation("[PlayerSkinMod] Loadout file is empty");
+                return;
+            }
+
+            Logger.LogInformation($"[PlayerSkinMod] Read loadout file ({json.Length} bytes): {json.Substring(0, Math.Min(200, json.Length))}");
 
             using var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
@@ -692,7 +731,11 @@ public class PlayerSkinModPlugin : BasePlugin
             // For local play, there's typically only slot 0
             foreach (var prop in root.EnumerateObject())
             {
-                if (!int.TryParse(prop.Name, out int slot)) continue;
+                if (!int.TryParse(prop.Name, out int slot))
+                {
+                    Logger.LogWarning($"[PlayerSkinMod] Skipping non-numeric key: {prop.Name}");
+                    continue;
+                }
                 var loadoutEl = prop.Value;
 
                 var loadout = new PlayerLoadout();
