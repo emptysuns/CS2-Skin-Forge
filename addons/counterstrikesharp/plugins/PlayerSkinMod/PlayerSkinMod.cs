@@ -343,9 +343,9 @@ public class PlayerSkinModPlugin : BasePlugin
         VirtualFunctions.GiveNamedItemFunc.Hook(OnGiveNamedItemPost, HookMode.Post);
 
         // Register commands for players to customize their loadout
-        RegisterCommand("skin_menu", OnSkinMenuCommand, "Open skin customization menu");
-        RegisterCommand("skin_random", OnSkinRandomCommand, "Enable random skin mode");
-        RegisterCommand("skin_reset", OnSkinResetCommand, "Reset all skins to default");
+        AddCommand("skin_menu", "Open skin customization menu", OnSkinMenuCommand);
+        AddCommand("skin_random", "Enable random skin mode", OnSkinRandomCommand);
+        AddCommand("skin_reset", "Reset all skins to default", OnSkinResetCommand);
 
         Logger.LogInformation("[PlayerSkinMod] Plugin loaded successfully");
     }
