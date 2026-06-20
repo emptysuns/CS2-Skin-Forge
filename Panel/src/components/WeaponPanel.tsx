@@ -22,6 +22,17 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
   const filteredWeapons = getWeaponsByCategory(selectedCategory);
   const isChinese = lang === 'schinese' || lang === 'tchinese';
 
+  const translateStickerName = (name: string): string => {
+    if (!isChinese) return name;
+    return name
+      .replace(/\(Holo\)/g, '(全息)')
+      .replace(/\(Foil\)/g, '(箔金)')
+      .replace(/\(Gold\)/g, '(金色)')
+      .replace(/\(Glitter\)/g, '(闪亮)')
+      .replace(/\(Paper\)/g, '(纸贴)')
+      .replace(/\(Lenticular\)/g, '(光栅)');
+  };
+
   const getDisplayName = (weapon: { name: string; nameZh: string }) => {
     return isChinese ? weapon.nameZh : weapon.name;
   };
@@ -259,7 +270,7 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
                     <img src={getStickerImageUrl(stickerData?.image || `econ/stickers/community01`)}
                       alt={stickerData?.name || 'Sticker'} className="w-10 h-10 object-contain"
                       onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                    <span className="text-xs text-white">{stickerData?.name || `Sticker #${current.id}`}</span>
+                    <span className="text-xs text-white">{translateStickerName(stickerData?.name || `Sticker #${current.id}`)}</span>
                     <button onClick={() => clearStickerSlot(selectedWeapon, activeStickerSlot)}
                       className="ml-auto text-xs text-red-400 hover:text-red-300">✕</button>
                   </div>
@@ -288,7 +299,7 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
                   <img src={getStickerImageUrl(sticker.image)} alt={sticker.name}
                     className="w-8 h-8 object-contain"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                  <span className="text-[10px] text-gray-400 truncate w-full text-center mt-0.5">{sticker.name.split(' - ').pop()}</span>
+                  <span className="text-[10px] text-gray-400 truncate w-full text-center mt-0.5">{translateStickerName(sticker.name.split(' - ').pop() || sticker.name)}</span>
                 </button>
               ))}
               {filteredStickers.length === 0 && (

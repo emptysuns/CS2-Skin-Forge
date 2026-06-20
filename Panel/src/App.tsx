@@ -140,6 +140,14 @@ function App() {
 
       <StatusBar status={status} />
 
+      <footer className="text-center text-[10px] text-gray-600 py-1">
+        <a href="https://github.com/emptysuns/CS2-Skin-Forge" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400 transition-colors">
+          CS2 Skin Mod
+        </a>
+        <span className="mx-1">•</span>
+        <span>Open Source & Free · 开源免费软件 · 请勿上当受骗</span>
+      </footer>
+
       <SettingsPanel
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}

@@ -217,7 +217,7 @@ fn deploy_addons() -> Result<String, String> {
         .ok_or_else(|| "Cannot find resource directory".to_string())?
         .to_path_buf();
 
-    let files_to_deploy = ["PlayerSkinMod.json", "skins_en.json"];
+    let files_to_deploy = ["PlayerSkinMod.dll", "PlayerSkinMod.json", "skins_en.json"];
     let mut deployed = Vec::new();
 
     for file in &files_to_deploy {

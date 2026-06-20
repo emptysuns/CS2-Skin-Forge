@@ -1962,7 +1962,7 @@ export const popularStickers: StickerData[] = [
 
 export function getStickerImageUrl(imagePath: string): string {
   if (imagePath.startsWith('http')) return imagePath;
-  return `https://community.akamai.steamstatic.com/economy/image/${imagePath}`;
+  return `https://cdn.steamstatic.com/apps/730/icons/${imagePath}.png`;
 }
 
 export function getGloveImageUrl(codename: string): string {

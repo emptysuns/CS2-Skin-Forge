@@ -96,6 +96,17 @@ Launch the CS2 Skin Mod Panel application.
 | `skin_random` | Enable random skin mode |
 | `skin_reset` | Reset all skins to default |
 
+## 🤖 Enhanced Bot Experience (Recommended)
+
+For the best experience with bot matches, we highly recommend using **[CS2-Bot-Improver](https://github.com/ed0ard/CS2-Bot-Improver)** alongside this plugin.
+
+CS2-Bot-Improver enhances bot behavior in CS2, making them:
+- More intelligent and challenging opponents
+- Better at using weapons and tactical positioning
+- More realistic overall gameplay experience
+
+Install CS2-Bot-Improver to your CS2 server's CounterStrikeSharp plugins directory, then use this Skin Mod Panel to customize your loadout for an enhanced local gaming experience.
+
 ### How It Works
 
 The panel and addon communicate via a JSON file (`player_loadout.json`):
