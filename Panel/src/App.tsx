@@ -31,7 +31,8 @@ function App() {
     glovePaint: -1,
     gloveWear: 0.01,
     gloveSeed: 0,
-    agentModel: -1,
+    agentModelCt: -1,
+    agentModelT: -1,
     musicKit: -1,
     useRandom: true,
   });
@@ -86,7 +87,8 @@ function App() {
       glovePaint: -1,
       gloveWear: 0.01,
       gloveSeed: 0,
-      agentModel: -1,
+      agentModelCt: -1,
+      agentModelT: -1,
       musicKit: -1,
       useRandom: true,
     });

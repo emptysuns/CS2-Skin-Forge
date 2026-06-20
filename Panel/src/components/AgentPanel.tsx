@@ -13,14 +13,29 @@ export default function AgentPanel({ loadout, updateLoadout }: AgentPanelProps) 
   const [selectedTeam, setSelectedTeam] = useState<'ct' | 't'>('ct');
 
   const handleAgentSelect = (modelId: string) => {
-    updateLoadout({ agentModel: parseInt(modelId, 10), useRandom: false });
+    const idx = parseInt(modelId, 10);
+    if (selectedTeam === 'ct') {
+      updateLoadout({ agentModelCt: idx, useRandom: false });
+    } else {
+      updateLoadout({ agentModelT: idx, useRandom: false });
+    }
   };
 
   const handleRandom = () => {
-    updateLoadout({ agentModel: -1, useRandom: true });
+    updateLoadout({ agentModelCt: -1, agentModelT: -1, useRandom: true });
   };
 
   const models = selectedTeam === 'ct' ? agentModels.ct : agentModels.t;
+  const currentIdx = selectedTeam === 'ct' ? loadout.agentModelCt : loadout.agentModelT;
+  const isBothRandom = loadout.agentModelCt === -1 && loadout.agentModelT === -1;
+
+  // Find selected agent names for display
+  const selectedCtName = loadout.agentModelCt >= 0
+    ? agentModels.ct[Math.min(loadout.agentModelCt, agentModels.ct.length - 1)]?.name ?? '—'
+    : t("preview.random");
+  const selectedTName = loadout.agentModelT >= 0
+    ? agentModels.t[Math.min(loadout.agentModelT, agentModels.t.length - 1)]?.name ?? '—'
+    : t("preview.random");
 
   return (
     <div className="space-y-3">
@@ -43,11 +58,23 @@ export default function AgentPanel({ loadout, updateLoadout }: AgentPanelProps) 
         </button>
       </div>
 
+      {/* Show current selections for both teams */}
+      <div className="flex space-x-2 text-xs">
+        <div className="flex-1 rounded-lg bg-gray-800/50 border border-gray-700 px-3 py-2">
+          <span className="text-blue-400 font-semibold">{t("agent.ct")}:</span>{' '}
+          <span className="text-gray-200">{selectedCtName}</span>
+        </div>
+        <div className="flex-1 rounded-lg bg-gray-800/50 border border-gray-700 px-3 py-2">
+          <span className="text-orange-400 font-semibold">{t("agent.t")}:</span>{' '}
+          <span className="text-gray-200">{selectedTName}</span>
+        </div>
+      </div>
+
       <button
         onClick={handleRandom}
         className={`
           card w-full text-center py-3 transition-all duration-200
-          ${loadout.agentModel === -1
+          ${isBothRandom
             ? 'ring-2 ring-amber-500 border-amber-500 bg-amber-900/20'
             : 'hover:border-gray-500'
           }
@@ -64,7 +91,7 @@ export default function AgentPanel({ loadout, updateLoadout }: AgentPanelProps) 
             onClick={() => handleAgentSelect(model.id)}
             className={`
               card p-2.5 text-center transition-all duration-200
-              ${loadout.agentModel === parseInt(model.id, 10)
+              ${currentIdx === parseInt(model.id, 10)
                 ? 'ring-2 ring-amber-500 border-amber-500 bg-amber-900/20'
                 : 'hover:border-gray-500'
               }

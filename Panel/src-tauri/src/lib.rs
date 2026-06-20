@@ -47,12 +47,18 @@ pub struct Loadout {
     pub glove_wear: f32,
     #[serde(rename = "gloveSeed", default)]
     pub glove_seed: i32,
-    #[serde(rename = "agentModel")]
-    pub agent_model: i32,
+    #[serde(rename = "agentModelCt", default = "default_agent")]
+    pub agent_model_ct: i32,
+    #[serde(rename = "agentModelT", default = "default_agent")]
+    pub agent_model_t: i32,
     #[serde(rename = "musicKit")]
     pub music_kit: i32,
     #[serde(rename = "useRandom")]
     pub use_random: bool,
+}
+
+fn default_agent() -> i32 {
+    -1
 }
 
 fn default_wear() -> f32 {

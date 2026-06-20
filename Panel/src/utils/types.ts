@@ -27,7 +27,8 @@ export interface Loadout {
   glovePaint: number;
   gloveWear: number;
   gloveSeed: number;
-  agentModel: number;
+  agentModelCt: number;
+  agentModelT: number;
   musicKit: number;
   useRandom: boolean;
 }

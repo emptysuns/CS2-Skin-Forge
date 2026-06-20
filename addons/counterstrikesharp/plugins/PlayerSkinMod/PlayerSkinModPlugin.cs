@@ -19,7 +19,7 @@ namespace PlayerSkinMod;
 public class PlayerSkinModPlugin : BasePlugin
 {
     public override string ModuleName        => "PlayerSkinMod";
-    public override string ModuleVersion     => "1.3.2";
+    public override string ModuleVersion     => "1.3.3";
     public override string ModuleAuthor      => "CS2-Skin-local-mod";
     public override string ModuleDescription => "Allow players to customize weapon skins, knives, gloves, agent models, music kits locally";
 
@@ -140,7 +140,7 @@ public class PlayerSkinModPlugin : BasePlugin
         player.PrintToChat($" \x04[PlayerSkinMod]\x01 Loadout file: {_loadoutFilePath}");
         player.PrintToChat($" \x04[PlayerSkinMod]\x01 File exists: {File.Exists(_loadoutFilePath)}");
         player.PrintToChat($" \x04[PlayerSkinMod]\x01 Loaded loadouts: {_playerLoadouts.Count}");
-        player.PrintToChat($" \x04[PlayerSkinMod]\x01 Knife: {loadout.KnifeIndex}, Glove: {loadout.GloveIndex}, Agent: {loadout.AgentModel}");
+        player.PrintToChat($" \x04[PlayerSkinMod]\x01 Knife: {loadout.KnifeIndex}, Glove: {loadout.GloveIndex}, AgentCT: {loadout.AgentModelCt}, AgentT: {loadout.AgentModelT}");
         player.PrintToChat($" \x04[PlayerSkinMod]\x01 UseRandom: {loadout.UseRandom}, Weapons: {loadout.WeaponPaints.Count}");
         player.PrintToChat($" \x04[PlayerSkinMod]\x01 SetAttrByName: {_setAttrByName != null}");
         player.PrintToChat(" \x04[PlayerSkinMod]\x01 --- End Diagnostic ---");
@@ -191,20 +191,23 @@ public class PlayerSkinModPlugin : BasePlugin
             return HookResult.Continue;
 
         var loadout = GetOrCreateLoadout(player.Slot);
-        Logger.LogInformation($"[PlayerSkinMod] Player {player.Slot} spawned. Loadout: knife={loadout.KnifeIndex}, glove={loadout.GloveIndex}, agent={loadout.AgentModel}, music={loadout.MusicKit}, random={loadout.UseRandom}, weapons={loadout.WeaponPaints.Count}, setAttrByName={_setAttrByName != null}");
+        Logger.LogInformation($"[PlayerSkinMod] Player {player.Slot} spawned. Loadout: knife={loadout.KnifeIndex}, glove={loadout.GloveIndex}, agentCT={loadout.AgentModelCt}, agentT={loadout.AgentModelT}, music={loadout.MusicKit}, random={loadout.UseRandom}, weapons={loadout.WeaponPaints.Count}, setAttrByName={_setAttrByName != null}");
 
         if (!_playerModels.TryGetValue(player.Slot, out string? model))
         {
-            if (loadout.AgentModel >= 0)
+            string[] pool;
+            int agentIdx;
+            if ((CsTeam)player.TeamNum == CsTeam.CounterTerrorist)
             {
-                string[] pool = (CsTeam)player.TeamNum == CsTeam.CounterTerrorist ? StaticData.CtModels : StaticData.TModels;
-                model = pool[Math.Min(loadout.AgentModel, pool.Length - 1)];
+                pool = StaticData.CtModels;
+                agentIdx = loadout.AgentModelCt;
             }
             else
             {
-                string[] pool = (CsTeam)player.TeamNum == CsTeam.CounterTerrorist ? StaticData.CtModels : StaticData.TModels;
-                model = pool[_rng.Next(pool.Length)];
+                pool = StaticData.TModels;
+                agentIdx = loadout.AgentModelT;
             }
+            model = agentIdx >= 0 ? pool[Math.Min(agentIdx, pool.Length - 1)] : pool[_rng.Next(pool.Length)];
             _playerModels[player.Slot] = model;
         }
 
@@ -374,6 +377,7 @@ public class PlayerSkinModPlugin : BasePlugin
 
             bool isLegacy = _legacyPaints.Contains((defIndex, paintKit));
             weapon.AcceptInput("SetBodygroup", value: $"body,{(isLegacy ? 1 : 0)}");
+            Utilities.SetStateChanged(weapon, "CBaseModelEntity", "m_CBodyComponent");
         }
         catch (Exception ex)
         {

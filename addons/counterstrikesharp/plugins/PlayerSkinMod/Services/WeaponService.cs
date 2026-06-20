@@ -84,6 +84,7 @@ public static class WeaponService
 
             bool isLegacy = legacyPaints.Contains((defIndex, paintKit));
             weapon.AcceptInput("SetBodygroup", value: $"body,{(isLegacy ? 1 : 0)}");
+            Utilities.SetStateChanged(weapon, "CBaseModelEntity", "m_CBodyComponent");
         }
         catch (Exception ex)
         {
@@ -144,6 +145,11 @@ public static class WeaponService
                 }
 
                 Utilities.SetStateChanged(w, "CEconEntity", "m_AttributeManager");
+
+                // Handle legacy bodygroup for knife skins
+                bool isLegacy = legacyPaints.Contains((defIndex, paintKit));
+                w.AcceptInput("SetBodygroup", value: $"body,{(isLegacy ? 1 : 0)}");
+                Utilities.SetStateChanged(w, "CBaseModelEntity", "m_CBodyComponent");
                 break;
             }
         }

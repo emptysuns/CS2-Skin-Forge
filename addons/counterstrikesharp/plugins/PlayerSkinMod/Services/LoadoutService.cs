@@ -69,8 +69,17 @@ public static class LoadoutService
                 if (loadoutEl.TryGetProperty("gloveSeed", out var gloveSeedEl))
                     loadout.GloveSeed = gloveSeedEl.GetInt32();
 
-                if (loadoutEl.TryGetProperty("agentModel", out var agentEl) && agentEl.GetInt32() >= 0)
-                    loadout.AgentModel = agentEl.GetInt32();
+                // New: separate CT/T agent models
+                if (loadoutEl.TryGetProperty("agentModelCt", out var agentCtEl) && agentCtEl.GetInt32() >= 0)
+                    loadout.AgentModelCt = agentCtEl.GetInt32();
+                if (loadoutEl.TryGetProperty("agentModelT", out var agentTEl) && agentTEl.GetInt32() >= 0)
+                    loadout.AgentModelT = agentTEl.GetInt32();
+                // Backward compat: if old agentModel exists and new fields don't, use old value for both
+                if (loadout.AgentModelCt < 0 && loadout.AgentModelT < 0 && loadoutEl.TryGetProperty("agentModel", out var oldAgentEl) && oldAgentEl.GetInt32() >= 0)
+                {
+                    loadout.AgentModelCt = oldAgentEl.GetInt32();
+                    loadout.AgentModelT = oldAgentEl.GetInt32();
+                }
 
                 if (loadoutEl.TryGetProperty("musicKit", out var musicEl) && musicEl.GetInt32() >= 0)
                     loadout.MusicKit = musicEl.GetInt32();
@@ -127,7 +136,7 @@ public static class LoadoutService
                 }
 
                 playerLoadouts[slot] = loadout;
-                logger.LogInformation($"[PlayerSkinMod] Loaded loadout for slot {slot}: knife={loadout.KnifeIndex}, glove={loadout.GloveIndex}, agent={loadout.AgentModel}, music={loadout.MusicKit}, weapons={loadout.WeaponPaints.Count}, random={loadout.UseRandom}");
+                logger.LogInformation($"[PlayerSkinMod] Loaded loadout for slot {slot}: knife={loadout.KnifeIndex}, glove={loadout.GloveIndex}, agentCT={loadout.AgentModelCt}, agentT={loadout.AgentModelT}, music={loadout.MusicKit}, weapons={loadout.WeaponPaints.Count}, random={loadout.UseRandom}");
             }
         }
         catch (Exception ex)

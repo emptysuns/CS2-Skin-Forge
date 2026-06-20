@@ -10,7 +10,8 @@ public class PlayerLoadout
     public int GlovePaint { get; set; } = -1;
     public float GloveWear { get; set; } = 0.01f;
     public int GloveSeed { get; set; } = 0;
-    public int AgentModel { get; set; } = -1;
+    public int AgentModelCt { get; set; } = -1;
+    public int AgentModelT { get; set; } = -1;
     public int MusicKit { get; set; } = -1;
     public Dictionary<ushort, int> WeaponPaints { get; set; } = new();
     public Dictionary<ushort, int> WeaponSeeds { get; set; } = new();
