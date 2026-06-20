@@ -19,6 +19,8 @@ jobs:
             target: x86_64-pc-windows-msvc
           - platform: ubuntu-latest
             target: x86_64-unknown-linux-gnu
+          - platform: macos-latest
+            target: aarch64-apple-darwin
 
     runs-on: ${{ matrix.platform }}
 
@@ -68,6 +70,15 @@ jobs:
             Panel/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/**/*.deb
           if-no-files-found: error
 
+      - name: Upload macOS artifacts
+        if: matrix.platform == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-macos
+          path: |
+            Panel/src-tauri/target/aarch64-apple-darwin/release/bundle/**/*.dmg
+          if-no-files-found: error
+
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -94,7 +105,7 @@ jobs:
         id: collect
         run: |
           mkdir -p release-files
-          find artifacts -type f \( -name "*.exe" -o -name "*.msi" -o -name "*.AppImage" -o -name "*.deb" \) -not -name "*.sig" -exec cp {} release-files/ \;
+          find artifacts -type f \( -name "*.exe" -o -name "*.msi" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.dmg" \) -not -name "*.sig" -exec cp {} release-files/ \;
           echo "=== Files to release ==="
           ls -la release-files/
           echo "file_count=$(ls release-files/ | wc -l)" >> $GITHUB_OUTPUT
