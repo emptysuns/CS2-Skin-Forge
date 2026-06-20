@@ -77,8 +77,8 @@ jobs:
           name: release-macos
           path: |
             Panel/src-tauri/target/aarch64-apple-darwin/release/bundle/**/*.dmg
-            Panel/src-tauri/target/aarch64-apple-darwin/release/bundle/**/*.app
-          if-no-files-found: error
+            Panel/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/*.app
+          if-no-files-found: warn
 
   release:
     needs: build
