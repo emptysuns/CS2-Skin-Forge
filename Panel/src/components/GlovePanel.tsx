@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Loadout } from '../utils/types';
-import { gloves, getGloveImageUrl } from '../data/skins';
+import { gloves, getGloveTypeImage } from '../data/skins';
 import { useT } from '../i18n';
 
 interface GlovePanelProps {
@@ -13,6 +13,11 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
   const [selectedGlove, setSelectedGlove] = useState<number | null>(
     loadout.gloveIndex >= 0 ? loadout.gloveIndex : null
   );
+  const [wearValue, setWearValue] = useState(loadout.gloveWear ?? 0.01);
+  const [seedValue, setSeedValue] = useState(loadout.gloveSeed ?? 0);
+
+  const wearLabels = ['FN', 'MW', 'FT', 'WW', 'BS'];
+  const wearValues = [0.01, 0.07, 0.15, 0.38, 0.45];
 
   const handleGloveSelect = (index: number) => {
     setSelectedGlove(index);
@@ -26,6 +31,16 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
 
   const handlePaintSelect = (paintId: number) => {
     updateLoadout({ glovePaint: paintId, useRandom: false });
+  };
+
+  const handleWearChange = (wear: number) => {
+    setWearValue(wear);
+    updateLoadout({ gloveWear: wear });
+  };
+
+  const handleSeedChange = (seed: number) => {
+    setSeedValue(seed);
+    updateLoadout({ gloveSeed: seed });
   };
 
   const handleRandom = () => {
@@ -64,7 +79,7 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
           >
             <div className="flex items-center space-x-2">
               <img
-                src={getGloveImageUrl(glove.codename)}
+                src={getGloveTypeImage(glove.defindex, glove.codename)}
                 alt={glove.name}
                 className="w-10 h-10 object-contain"
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
@@ -83,6 +98,61 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
           <h3 className="text-sm font-semibold text-white mb-3">
             {gloves[selectedGlove].name} - {t("glove.selectPaint")}
           </h3>
+
+          {/* Wear + Seed controls */}
+          <div className="mb-4 p-3 bg-gray-800 rounded-lg space-y-3">
+            <div>
+              <label className="text-xs text-gray-400 block mb-1">
+                {t("glove.wear")} ({wearLabels[wearValues.findIndex(v => Math.abs(v - wearValue) < 0.02)] || 'Custom'})
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={wearValue}
+                  onChange={(e) => handleWearChange(parseFloat(e.target.value))}
+                  className="flex-1 h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                />
+                <span className="text-xs text-gray-300 w-12 text-right">{wearValue.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between mt-1">
+                {wearValues.map((v, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleWearChange(v)}
+                    className={`text-[10px] px-1.5 py-0.5 rounded transition-all ${
+                      Math.abs(wearValue - v) < 0.02
+                        ? 'bg-amber-600 text-white'
+                        : 'text-gray-500 hover:text-gray-300'
+                    }`}
+                  >
+                    {wearLabels[i]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-400 block mb-1">
+                {t("glove.seed")} (0 = random)
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="range"
+                  min="0"
+                  max="1000"
+                  step="1"
+                  value={seedValue}
+                  onChange={(e) => handleSeedChange(parseInt(e.target.value))}
+                  className="flex-1 h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                />
+                <span className="text-xs text-gray-300 w-10 text-right">{seedValue}</span>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
             {gloves[selectedGlove].paints.map(paint => (
               <button

@@ -19,7 +19,7 @@ namespace PlayerSkinMod;
 public class PlayerSkinModPlugin : BasePlugin
 {
     public override string ModuleName        => "PlayerSkinMod";
-    public override string ModuleVersion     => "1.3.0";
+    public override string ModuleVersion     => "1.3.1";
     public override string ModuleAuthor      => "CS2-Skin-local-mod";
     public override string ModuleDescription => "Allow players to customize weapon skins, knives, gloves, agent models, music kits locally";
 
@@ -257,7 +257,9 @@ public class PlayerSkinModPlugin : BasePlugin
         float knifeWear = loadout.KnifeWear;
 
         WeaponService.ReplaceKnife(pawn, knifeDefIndex, knifePaintKit, _legacyPaints, _setAttrByName, knifeSeed, knifeWear);
-        WeaponService.ApplyGloves(player, pawn, gloveDefIndex, glovePaintKit, _setAttrByName);
+        int gloveSeed = loadout.GloveSeed;
+        float gloveWear = loadout.GloveWear;
+        WeaponService.ApplyGloves(player, pawn, gloveDefIndex, glovePaintKit, _setAttrByName, gloveSeed, gloveWear);
     }
 
     private HookResult OnGiveNamedItemPost(DynamicHook hook)
@@ -282,12 +284,13 @@ public class PlayerSkinModPlugin : BasePlugin
                 return HookResult.Continue;
 
             int slot = player.Slot;
-            ApplySkinForPlayer(slot, weapon);
+            ulong steamId = player.SteamID;
+            ApplySkinForPlayer(slot, weapon, steamId);
 
             Server.NextFrame(() =>
             {
                 if (weapon != null && weapon.IsValid)
-                    ApplySkinForPlayer(slot, weapon);
+                    ApplySkinForPlayer(slot, weapon, steamId);
             });
         }
         catch (Exception ex)
@@ -298,7 +301,7 @@ public class PlayerSkinModPlugin : BasePlugin
         return HookResult.Continue;
     }
 
-    private void ApplySkinForPlayer(int slot, CBasePlayerWeapon? weapon)
+    private void ApplySkinForPlayer(int slot, CBasePlayerWeapon? weapon, ulong steamId = 0)
     {
         if (_setAttrByName == null || weapon == null || !weapon.IsValid) return;
 
@@ -334,14 +337,14 @@ public class PlayerSkinModPlugin : BasePlugin
         int seed = loadout.WeaponSeeds.TryGetValue(defIndex, out int s) ? s : 0;
         float wear = loadout.WeaponWears.TryGetValue(defIndex, out float w) ? w : 0.01f;
 
-        ApplySkinToWeaponInternal(weapon, defIndex, paint, seed, wear);
+        ApplySkinToWeaponInternal(weapon, defIndex, paint, seed, wear, steamId);
 
         // Apply stickers if configured
         if (loadout.WeaponStickers.TryGetValue(defIndex, out var stickers) && stickers.Count > 0)
             ApplyStickersInternal(weapon, stickers);
     }
 
-    private void ApplySkinToWeaponInternal(CEconEntity weapon, ushort defIndex, int paintKit, int seed = 0, float wear = 0.01f)
+    private void ApplySkinToWeaponInternal(CEconEntity weapon, ushort defIndex, int paintKit, int seed = 0, float wear = 0.01f, ulong steamId = 0)
     {
         if (_setAttrByName == null) return;
 
@@ -353,6 +356,7 @@ public class PlayerSkinModPlugin : BasePlugin
             item.AttributeList.Attributes.RemoveAll();
             item.NetworkedDynamicAttributes.Attributes.RemoveAll();
             AssignItemId(item);
+            if (steamId > 0) item.AccountID = (uint)steamId;
 
             weapon.FallbackPaintKit = paintKit;
             weapon.FallbackSeed = seed;

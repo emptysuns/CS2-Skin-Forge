@@ -45,6 +45,8 @@ export const DICTS: Record<string, Partial18n> = {
     "glove.title": "手套选择",
     "glove.selectType": "手套类型",
     "glove.selectPaint": "手套涂装",
+    "glove.wear": "磨损",
+    "glove.seed": "图案",
 
     // Agent Panel
     "agent.title": "探员模型",
@@ -126,6 +128,8 @@ export const DICTS: Record<string, Partial18n> = {
     "glove.title": "手套選擇",
     "glove.selectType": "手套類型",
     "glove.selectPaint": "手套塗裝",
+    "glove.wear": "磨損",
+    "glove.seed": "圖案",
     "agent.title": "探員模型",
     "agent.ct": "反恐精英",
     "agent.t": "恐怖分子",
@@ -193,6 +197,8 @@ export const DICTS: Record<string, Partial18n> = {
     "glove.title": "グローブ選択",
     "glove.selectType": "グローブタイプ",
     "glove.selectPaint": "グローブペイント",
+    "glove.wear": "ウェア",
+    "glove.seed": "シード",
     "agent.title": "エージェントモデル",
     "agent.ct": "カウンターテロリスト",
     "agent.t": "テロリスト",

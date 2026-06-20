@@ -55,7 +55,8 @@ public static class WeaponService
         MemoryFunctionVoid<nint, string, float> setAttrByName,
         ref bool skinErrorLogged,
         int seed = 0,
-        float wear = 0.01f)
+        float wear = 0.01f,
+        uint accountId = 0)
     {
         try
         {
@@ -65,6 +66,7 @@ public static class WeaponService
             item.AttributeList.Attributes.RemoveAll();
             item.NetworkedDynamicAttributes.Attributes.RemoveAll();
             AssignItemId(item);
+            if (accountId > 0) item.AccountID = accountId;
 
             weapon.FallbackPaintKit = paintKit;
             weapon.FallbackSeed = seed;
@@ -155,7 +157,9 @@ public static class WeaponService
         CCSPlayerPawn pawn,
         ushort defIndex,
         int paintKit,
-        MemoryFunctionVoid<nint, string, float> setAttrByName)
+        MemoryFunctionVoid<nint, string, float> setAttrByName,
+        int seed = 0,
+        float wear = 0.01f)
     {
         try
         {
@@ -166,16 +170,18 @@ public static class WeaponService
 
             item.ItemDefinitionIndex = defIndex;
             AssignItemId(item);
+            item.AccountID = (uint)player.SteamID;
 
             setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture prefab", paintKit);
-            setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture seed", 0f);
-            setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture wear", 0.01f);
+            setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture seed", (float)seed);
+            setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture wear", wear);
 
             setAttrByName.Invoke(item.AttributeList.Handle, "set item texture prefab", paintKit);
-            setAttrByName.Invoke(item.AttributeList.Handle, "set item texture seed", 0f);
-            setAttrByName.Invoke(item.AttributeList.Handle, "set item texture wear", 0.01f);
+            setAttrByName.Invoke(item.AttributeList.Handle, "set item texture seed", (float)seed);
+            setAttrByName.Invoke(item.AttributeList.Handle, "set item texture wear", wear);
 
             item.Initialized = true;
+            Utilities.SetStateChanged(pawn, "CCSPlayerPawn", "m_EconGloves");
 
             // Force a re-render of the glove model so the new mesh actually shows.
             pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,0");

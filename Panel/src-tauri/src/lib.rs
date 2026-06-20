@@ -43,6 +43,10 @@ pub struct Loadout {
     pub glove_index: i32,
     #[serde(rename = "glovePaint")]
     pub glove_paint: i32,
+    #[serde(rename = "gloveWear", default = "default_wear")]
+    pub glove_wear: f32,
+    #[serde(rename = "gloveSeed", default)]
+    pub glove_seed: i32,
     #[serde(rename = "agentModel")]
     pub agent_model: i32,
     #[serde(rename = "musicKit")]

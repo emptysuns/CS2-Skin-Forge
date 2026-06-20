@@ -38,6 +38,8 @@ export const EN = {
   "glove.title": "Glove Selection",
   "glove.selectType": "Glove Type",
   "glove.selectPaint": "Glove Paint",
+  "glove.wear": "Wear",
+  "glove.seed": "Seed",
 
   // Agent Panel
   "agent.title": "Agent Models",

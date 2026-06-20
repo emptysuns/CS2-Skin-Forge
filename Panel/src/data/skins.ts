@@ -1969,6 +1969,15 @@ export function getGloveImageUrl(codename: string): string {
   return `https://cdn.steamstatic.com/apps/730/icons/econ/default_generated/${codename}_light_large.png`;
 }
 
+export function getGloveTypeImage(defindex: number, codename: string): string {
+  // Use first paint image as icon since default_generated may not have base glove images
+  const glove = gloves.find(g => g.defindex === defindex);
+  if (glove && glove.paints.length > 0 && glove.paints[0].image) {
+    return glove.paints[0].image;
+  }
+  return getGloveImageUrl(codename);
+}
+
 export function getSkinImageUrl(weaponId: number, paintId: number): string | undefined {
   const paints = weaponPaints[weaponId];
   if (!paints) return undefined;

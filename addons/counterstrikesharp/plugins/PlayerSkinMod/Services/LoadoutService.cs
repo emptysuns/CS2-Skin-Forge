@@ -63,6 +63,12 @@ public static class LoadoutService
                 if (loadoutEl.TryGetProperty("glovePaint", out var glovePaintEl) && glovePaintEl.GetInt32() >= 0)
                     loadout.GlovePaint = glovePaintEl.GetInt32();
 
+                if (loadoutEl.TryGetProperty("gloveWear", out var gloveWearEl))
+                    loadout.GloveWear = (float)gloveWearEl.GetDouble();
+
+                if (loadoutEl.TryGetProperty("gloveSeed", out var gloveSeedEl))
+                    loadout.GloveSeed = gloveSeedEl.GetInt32();
+
                 if (loadoutEl.TryGetProperty("agentModel", out var agentEl) && agentEl.GetInt32() >= 0)
                     loadout.AgentModel = agentEl.GetInt32();
 
