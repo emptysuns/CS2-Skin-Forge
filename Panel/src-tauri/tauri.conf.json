@@ -13,7 +13,6 @@
     "active": true,
     "targets": ["nsis", "appimage", "deb", "dmg"],
     "resources": [
-      "../../addons/counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.dll",
       "../../addons/counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.json",
       "../../addons/counterstrikesharp/plugins/PlayerSkinMod/skins_en.json"
     ],
