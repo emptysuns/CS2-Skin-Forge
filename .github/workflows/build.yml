@@ -75,7 +75,8 @@ jobs:
             Panel/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.deb
             Panel/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.exe
             Panel/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.msi
-          if-no-files-found: ignore
+            Panel/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.nsis.zip
+          if-no-files-found: warn
 
   release:
     needs: build
