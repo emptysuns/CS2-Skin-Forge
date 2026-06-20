@@ -17,16 +17,10 @@ jobs:
         include:
           - platform: windows-latest
             target: x86_64-pc-windows-msvc
-            artifact_name: CS2-Skin-Mod
-            ext: exe
           - platform: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            artifact_name: CS2-Skin-Mod
-            ext: AppImage
           - platform: macos-latest
             target: aarch64-apple-darwin
-            artifact_name: CS2-Skin-Mod
-            ext: dmg
 
     runs-on: ${{ matrix.platform }}
 
@@ -56,28 +50,32 @@ jobs:
         run: npx tauri build --target ${{ matrix.target }}
         working-directory: ./Panel
 
-      - name: Find and upload artifacts (Linux)
-        if: matrix.platform == 'ubuntu-latest'
-        run: |
-          find Panel/src-tauri/target/${{ matrix.target }}/release/bundle -name "*.AppImage" -not -name "*.sig" | head -1
-          echo "ARTIFACT_PATH=$(find Panel/src-tauri/target/${{ matrix.target }}/release/bundle -name '*.AppImage' -not -name '*.sig' | head -1)" >> $GITHUB_ENV
-
-      - name: Find and upload artifacts (Windows)
+      - name: Upload Windows artifacts
         if: matrix.platform == 'windows-latest'
-        run: |
-          $exe = Get-ChildItem -Path "Panel/src-tauri/target/${{ matrix.target }}/release/bundle" -Recurse -Filter "*.exe" | Where-Object { $_.Name -notmatch "\.sig$" } | Select-Object -First 1
-          echo "ARTIFACT_PATH=$($exe.FullName)" >> $env:GITHUB_ENV
-
-      - name: Find and upload artifacts (macOS)
-        if: matrix.platform == 'macos-latest'
-        run: |
-          echo "ARTIFACT_PATH=$(find Panel/src-tauri/target/${{ matrix.target }}/release/bundle -name '*.dmg' -not -name '*.sig' | head -1)" >> $GITHUB_ENV
-
-      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-${{ matrix.platform }}
-          path: ${{ env.ARTIFACT_PATH }}
+          name: release-windows
+          path: |
+            Panel/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/**/*.exe
+            Panel/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/**/*.msi
+
+      - name: Upload Linux artifacts
+        if: matrix.platform == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-linux
+          path: |
+            Panel/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/**/*.AppImage
+            Panel/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/**/*.deb
+
+      - name: Upload macOS artifacts
+        if: matrix.platform == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-macos
+          path: |
+            Panel/src-tauri/target/aarch64-apple-darwin/release/bundle/**/*.dmg
+            Panel/src-tauri/target/aarch64-apple-darwin/release/bundle/**/*.app
 
   release:
     needs: build
@@ -94,7 +92,7 @@ jobs:
           path: artifacts
 
       - name: List artifacts
-        run: find artifacts -type f
+        run: find artifacts -type f -not -name "*.sig"
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -116,6 +114,6 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            artifacts/release-ubuntu-latest/*
-            artifacts/release-windows-latest/*
-            artifacts/release-macos-latest/*
+            artifacts/release-windows/*
+            artifacts/release-linux/*
+            artifacts/release-macos/*
