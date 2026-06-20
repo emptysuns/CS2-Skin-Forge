@@ -54,6 +54,7 @@ jobs:
 
       - name: Build PlayerSkinMod plugin (Windows)
         if: matrix.platform == 'windows-latest'
+        shell: bash
         run: |
           dotnet build addons/counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.csproj -c Release
           mkdir -p addons/counterstrikesharp/plugins/PlayerSkinMod/bin
