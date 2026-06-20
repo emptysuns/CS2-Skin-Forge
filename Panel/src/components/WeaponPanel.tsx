@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Loadout, StickerInfo } from '../utils/types';
+import { Loadout } from '../utils/types';
 import { weapons, weaponCategories, getWeaponsByCategory, getWeaponImageUrl } from '../data/weapons';
 import { weaponPaints, popularStickers, getStickerImageUrl } from '../data/skins';
 import { useT } from '../i18n';
