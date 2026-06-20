@@ -29,6 +29,10 @@ export const DICTS: Record<string, Partial18n> = {
     "weapon.heavy": "重型武器",
     "weapon.selectPaint": "选择涂装",
     "weapon.noPaint": "未选择涂装",
+    "weapon.wear": "磨损度",
+    "weapon.seed": "图案模板",
+    "weapon.settings": "皮肤设置",
+    "weapon.stickerSearch": "搜索贴纸...",
 
     // Knife Panel
     "knife.title": "刀具选择",

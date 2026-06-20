@@ -121,12 +121,27 @@ jobs:
 
           # Create addons zip with the compiled CS2 plugin DLL
           cd addons
-          zip -r ../release-files/addons.zip counterstrikesharp/
+          zip -r ../release-files/addons.zip \
+            counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.dll \
+            counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.json \
+            counterstrikesharp/plugins/PlayerSkinMod/skins_en.json
           cd ..
 
           echo "=== Files to release ==="
           ls -la release-files/
           echo "file_count=$(ls release-files/ | wc -l)" >> $GITHUB_OUTPUT
+
+      - name: Rename release files with version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          cd release-files
+          for f in *.exe *.msi *.AppImage *.deb *.dmg; do
+            if [ -f "$f" ]; then
+              base="${f%.*}"
+              ext="${f##*.}"
+              mv "$f" "${base}-${VERSION}.${ext}"
+            fi
+          done
 
       - name: Verify release files exist
         run: |

@@ -13,8 +13,12 @@ export interface StickerInfo {
 export interface Loadout {
   weaponPaints: Record<number, number>;
   weaponStickers: Record<number, StickerInfo[]>;
+  weaponWears: Record<number, number>;
+  weaponSeeds: Record<number, number>;
   knifeIndex: number;
   knifePaint: number;
+  knifeWear: number;
+  knifeSeed: number;
   gloveIndex: number;
   glovePaint: number;
   agentModel: number;

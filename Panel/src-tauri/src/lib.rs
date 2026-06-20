@@ -27,10 +27,18 @@ pub struct Loadout {
     pub weapon_paints: std::collections::HashMap<u16, i32>,
     #[serde(rename = "weaponStickers", default)]
     pub weapon_stickers: std::collections::HashMap<u16, Vec<StickerInfo>>,
+    #[serde(rename = "weaponWears", default)]
+    pub weapon_wears: std::collections::HashMap<u16, f32>,
+    #[serde(rename = "weaponSeeds", default)]
+    pub weapon_seeds: std::collections::HashMap<u16, i32>,
     #[serde(rename = "knifeIndex")]
     pub knife_index: i32,
     #[serde(rename = "knifePaint")]
     pub knife_paint: i32,
+    #[serde(rename = "knifeWear", default = "default_wear")]
+    pub knife_wear: f32,
+    #[serde(rename = "knifeSeed", default)]
+    pub knife_seed: i32,
     #[serde(rename = "gloveIndex")]
     pub glove_index: i32,
     #[serde(rename = "glovePaint")]
@@ -41,6 +49,10 @@ pub struct Loadout {
     pub music_kit: i32,
     #[serde(rename = "useRandom")]
     pub use_random: bool,
+}
+
+fn default_wear() -> f32 {
+    0.01
 }
 
 #[derive(Debug, Serialize, Deserialize)]

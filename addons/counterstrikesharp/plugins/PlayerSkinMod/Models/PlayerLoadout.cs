@@ -1,0 +1,29 @@
+namespace PlayerSkinMod.Models;
+
+public class PlayerLoadout
+{
+    public int KnifeIndex { get; set; } = -1;
+    public int KnifePaint { get; set; } = -1;
+    public float KnifeWear { get; set; } = 0.01f;
+    public int KnifeSeed { get; set; } = 0;
+    public int GloveIndex { get; set; } = -1;
+    public int GlovePaint { get; set; } = -1;
+    public int AgentModel { get; set; } = -1;
+    public int MusicKit { get; set; } = -1;
+    public Dictionary<ushort, int> WeaponPaints { get; set; } = new();
+    public Dictionary<ushort, int> WeaponSeeds { get; set; } = new();
+    public Dictionary<ushort, float> WeaponWears { get; set; } = new();
+    public Dictionary<ushort, List<StickerInfo>> WeaponStickers { get; set; } = new();
+    public bool UseRandom { get; set; } = true;
+}
+
+public class StickerInfo
+{
+    public uint Id { get; set; }
+    public uint Schema { get; set; } = 0;
+    public float OffsetX { get; set; } = 0f;
+    public float OffsetY { get; set; } = 0f;
+    public float Wear { get; set; } = 0f;
+    public float Scale { get; set; } = 1f;
+    public float Rotation { get; set; } = 0f;
+}

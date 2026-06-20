@@ -22,6 +22,10 @@ export const EN = {
   "weapon.heavy": "Heavy",
   "weapon.selectPaint": "Select Paint",
   "weapon.noPaint": "No paint selected",
+  "weapon.wear": "Wear",
+  "weapon.seed": "Pattern Seed",
+  "weapon.settings": "Skin Settings",
+  "weapon.stickerSearch": "Search stickers...",
 
   // Knife Panel
   "knife.title": "Knife Selection",

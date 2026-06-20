@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Loadout } from '../utils/types';
-import { weapons, weaponCategories, getWeaponsByCategory, getWeaponImageUrl } from '../data/weapons';
-import { weaponPaints, popularStickers, getStickerImageUrl } from '../data/skins';
+import { weapons, weaponCategories, getWeaponsByCategory } from '../data/weapons';
+import { weaponPaints } from '../data/skins';
+import { allStickers, stickerCategories, getStickerImageUrl } from '../data/stickers';
+import { getWeaponDefaultImage } from '../data/weaponImages';
 import { useT } from '../i18n';
 
 interface WeaponPanelProps {
@@ -14,6 +16,8 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedWeapon, setSelectedWeapon] = useState<number | null>(null);
   const [activeStickerSlot, setActiveStickerSlot] = useState(0);
+  const [stickerSearch, setStickerSearch] = useState('');
+  const [stickerCategory, setStickerCategory] = useState('All');
 
   const filteredWeapons = getWeaponsByCategory(selectedCategory);
   const isChinese = lang === 'schinese' || lang === 'tchinese';
@@ -34,9 +38,15 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
     delete newPaints[defindex];
     const newStickers = { ...loadout.weaponStickers };
     delete newStickers[defindex];
+    const newWears = { ...loadout.weaponWears };
+    delete newWears[defindex];
+    const newSeeds = { ...loadout.weaponSeeds };
+    delete newSeeds[defindex];
     updateLoadout({
       weaponPaints: newPaints,
       weaponStickers: newStickers,
+      weaponWears: newWears,
+      weaponSeeds: newSeeds,
       useRandom: Object.keys(newPaints).length === 0,
     });
   };
@@ -57,6 +67,18 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
     });
   };
 
+  const handleWearChange = (defindex: number, wear: number) => {
+    updateLoadout({
+      weaponWears: { ...loadout.weaponWears, [defindex]: wear },
+    });
+  };
+
+  const handleSeedChange = (defindex: number, seed: number) => {
+    updateLoadout({
+      weaponSeeds: { ...loadout.weaponSeeds, [defindex]: seed },
+    });
+  };
+
   const getCategoryLabel = (category: string) => {
     const keyMap: Record<string, string> = {
       'All': 'weapon.all', 'Pistols': 'weapon.pistols', 'Rifles': 'weapon.rifles',
@@ -64,6 +86,23 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
     };
     return t(keyMap[category] as any) || category;
   };
+
+  // Filter stickers based on search and category
+  const filteredStickers = useMemo(() => {
+    let filtered = allStickers;
+    if (stickerCategory !== 'All') {
+      filtered = filtered.filter(s => s.category === stickerCategory);
+    }
+    if (stickerSearch.trim()) {
+      const query = stickerSearch.toLowerCase();
+      filtered = filtered.filter(s => s.name.toLowerCase().includes(query));
+    }
+    // Limit to 200 for performance
+    return filtered.slice(0, 200);
+  }, [stickerSearch, stickerCategory]);
+
+  const wearLabels = ['FN', 'MW', 'FT', 'WW', 'BS'];
+  const wearValues = [0.01, 0.07, 0.15, 0.38, 0.45];
 
   return (
     <div className="space-y-3">
@@ -87,7 +126,7 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
               className={`card p-2 text-left transition-all duration-200 cursor-pointer overflow-hidden
                 ${isSelected ? 'ring-2 ring-amber-500 border-amber-500' : ''}
                 ${hasCustomPaint ? 'border-l-2 border-l-green-500' : ''}`}>
-              <img src={getWeaponImageUrl(weapon.defindex)} alt={weapon.name}
+              <img src={getWeaponDefaultImage(weapon.defindex)} alt={weapon.name}
                 className="w-full h-12 object-contain mb-1 opacity-90"
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               <div className="text-xs font-semibold text-white truncate">{getDisplayName(weapon)}</div>
@@ -126,6 +165,65 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
             ))}
           </div>
 
+          {/* Wear & Seed controls */}
+          {loadout.weaponPaints[selectedWeapon] !== undefined && (
+            <div className="mt-4 border-t border-gray-700 pt-3">
+              <h4 className="text-xs font-semibold text-gray-300 mb-2">⚙️ {t("weapon.settings") || "Skin Settings"}</h4>
+              <div className="space-y-3 p-2 bg-gray-800 rounded-lg">
+                <div>
+                  <label className="text-xs text-gray-400 block mb-1">
+                    🎯 {t("weapon.wear") || "Wear"} ({wearLabels[wearValues.findIndex(v => Math.abs(v - (loadout.weaponWears[selectedWeapon] ?? 0.01)) < 0.02)] || 'Custom'})
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      value={loadout.weaponWears[selectedWeapon] ?? 0.01}
+                      onChange={(e) => handleWearChange(selectedWeapon, parseFloat(e.target.value))}
+                      className="flex-1 h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                    />
+                    <span className="text-xs text-gray-300 w-12 text-right">{(loadout.weaponWears[selectedWeapon] ?? 0.01).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between mt-1">
+                    {wearValues.map((v, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handleWearChange(selectedWeapon, v)}
+                        className={`text-[10px] px-1.5 py-0.5 rounded transition-all ${
+                          Math.abs((loadout.weaponWears[selectedWeapon] ?? 0.01) - v) < 0.02
+                            ? 'bg-amber-600 text-white'
+                            : 'text-gray-500 hover:text-gray-300'
+                        }`}
+                      >
+                        {wearLabels[i]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs text-gray-400 block mb-1">
+                    🎲 {t("weapon.seed") || "Pattern Seed"} (0 = random)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="range"
+                      min="0"
+                      max="1000"
+                      step="1"
+                      value={loadout.weaponSeeds[selectedWeapon] ?? 0}
+                      onChange={(e) => handleSeedChange(selectedWeapon, parseInt(e.target.value))}
+                      className="flex-1 h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                    />
+                    <span className="text-xs text-gray-300 w-10 text-right">{loadout.weaponSeeds[selectedWeapon] ?? 0}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Sticker Section */}
           <div className="mt-4 border-t border-gray-700 pt-3">
             <h4 className="text-xs font-semibold text-gray-300 mb-2">🎨 Stickers</h4>
@@ -150,10 +248,10 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
               const stickers = loadout.weaponStickers[selectedWeapon] || [];
               const current = stickers[activeStickerSlot];
               if (current?.id > 0) {
-                const stickerData = popularStickers.find(s => s.id === current.id);
+                const stickerData = allStickers.find(s => s.id === current.id);
                 return (
                   <div className="flex items-center gap-2 mb-2 p-2 bg-gray-800 rounded">
-                    <img src={getStickerImageUrl(stickerData?.image || 'econ/stickers/community01')}
+                    <img src={getStickerImageUrl(stickerData?.image || `econ/stickers/community01`)}
                       alt={stickerData?.name || 'Sticker'} className="w-10 h-10 object-contain"
                       onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                     <span className="text-xs text-white">{stickerData?.name || `Sticker #${current.id}`}</span>
@@ -165,9 +263,29 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
               return <p className="text-xs text-gray-500 mb-2">Empty slot</p>;
             })()}
 
+            {/* Sticker search & filter */}
+            <div className="flex gap-2 mb-2">
+              <input
+                type="text"
+                placeholder={t("weapon.stickerSearch") || "Search stickers..."}
+                value={stickerSearch}
+                onChange={(e) => setStickerSearch(e.target.value)}
+                className="flex-1 bg-gray-700 text-white text-xs rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+              <select
+                value={stickerCategory}
+                onChange={(e) => setStickerCategory(e.target.value)}
+                className="bg-gray-700 text-white text-xs rounded px-2 py-1.5 focus:outline-none"
+              >
+                {stickerCategories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
             {/* Sticker grid */}
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5 max-h-40 overflow-y-auto">
-              {popularStickers.map(sticker => (
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5 max-h-48 overflow-y-auto">
+              {filteredStickers.map(sticker => (
                 <button key={sticker.id} onClick={() => handleStickerSelect(selectedWeapon, sticker.id)}
                   className="flex flex-col items-center p-1.5 rounded bg-gray-700 hover:bg-gray-600 transition-all"
                   title={sticker.name}>
@@ -177,7 +295,19 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
                   <span className="text-[10px] text-gray-400 truncate w-full text-center mt-0.5">{sticker.name.split(' - ').pop()}</span>
                 </button>
               ))}
+              {filteredStickers.length === 0 && (
+                <div className="col-span-full text-center text-xs text-gray-500 py-2">
+                  No stickers found
+                </div>
+              )}
             </div>
+            {allStickers.length > 200 && (
+              <p className="text-[10px] text-gray-600 mt-1">
+                {stickerSearch || stickerCategory !== 'All'
+                  ? `Showing ${filteredStickers.length} results`
+                  : `Use search to find from ${allStickers.length} stickers`}
+              </p>
+            )}
           </div>
         </div>
       )}
