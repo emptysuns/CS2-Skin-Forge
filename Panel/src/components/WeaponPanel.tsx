@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Loadout } from '../utils/types';
 import { weapons, weaponCategories, getWeaponsByCategory } from '../data/weapons';
 import { weaponPaints } from '../data/skins';
-import { allStickers, stickerCategories, getStickerImageUrl } from '../data/stickers';
+import { allStickers, getStickerImageUrl } from '../data/stickers';
 import { getWeaponDefaultImage } from '../data/weaponImages';
 import { useT } from '../i18n';
 
@@ -17,7 +17,6 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
   const [selectedWeapon, setSelectedWeapon] = useState<number | null>(null);
   const [activeStickerSlot, setActiveStickerSlot] = useState(0);
   const [stickerSearch, setStickerSearch] = useState('');
-  const [stickerCategory, setStickerCategory] = useState('All');
 
   const filteredWeapons = getWeaponsByCategory(selectedCategory);
   const isChinese = lang === 'schinese' || lang === 'tchinese';
@@ -87,19 +86,16 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
     return t(keyMap[category] as any) || category;
   };
 
-  // Filter stickers based on search and category
+  // Filter stickers based on search
   const filteredStickers = useMemo(() => {
     let filtered = allStickers;
-    if (stickerCategory !== 'All') {
-      filtered = filtered.filter(s => s.category === stickerCategory);
-    }
     if (stickerSearch.trim()) {
       const query = stickerSearch.toLowerCase();
       filtered = filtered.filter(s => s.name.toLowerCase().includes(query));
     }
     // Limit to 200 for performance
     return filtered.slice(0, 200);
-  }, [stickerSearch, stickerCategory]);
+  }, [stickerSearch]);
 
   const wearLabels = ['FN', 'MW', 'FT', 'WW', 'BS'];
   const wearValues = [0.01, 0.07, 0.15, 0.38, 0.45];
@@ -263,7 +259,7 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
               return <p className="text-xs text-gray-500 mb-2">Empty slot</p>;
             })()}
 
-            {/* Sticker search & filter */}
+            {/* Sticker search */}
             <div className="flex gap-2 mb-2">
               <input
                 type="text"
@@ -272,15 +268,6 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
                 onChange={(e) => setStickerSearch(e.target.value)}
                 className="flex-1 bg-gray-700 text-white text-xs rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-500"
               />
-              <select
-                value={stickerCategory}
-                onChange={(e) => setStickerCategory(e.target.value)}
-                className="bg-gray-700 text-white text-xs rounded px-2 py-1.5 focus:outline-none"
-              >
-                {stickerCategories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
             </div>
 
             {/* Sticker grid */}

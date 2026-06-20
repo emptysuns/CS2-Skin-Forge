@@ -23,7 +23,7 @@ export const EN = {
   "weapon.selectPaint": "Select Paint",
   "weapon.noPaint": "No paint selected",
   "weapon.wear": "Wear",
-  "weapon.seed": "Pattern Seed",
+  "weapon.seed": "Seed",
   "weapon.settings": "Skin Settings",
   "weapon.stickerSearch": "Search stickers...",
 
@@ -31,6 +31,8 @@ export const EN = {
   "knife.title": "Knife Selection",
   "knife.selectType": "Knife Type",
   "knife.selectPaint": "Knife Paint",
+  "knife.wear": "Wear",
+  "knife.seed": "Seed",
 
   // Glove Panel
   "glove.title": "Glove Selection",

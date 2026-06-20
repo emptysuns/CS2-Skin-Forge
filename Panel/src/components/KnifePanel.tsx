@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Loadout } from '../utils/types';
 import { knives, getKnifeImageUrl } from '../data/knives';
-import { knifeSkinsByType, getKnifeSkinImageUrl } from '../data/knifeSkins';
+import { knifeSkinsByType } from '../data/knifeSkins';
 import { useT } from '../i18n';
 
 interface KnifePanelProps {

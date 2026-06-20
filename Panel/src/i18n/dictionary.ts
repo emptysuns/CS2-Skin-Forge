@@ -38,6 +38,8 @@ export const DICTS: Record<string, Partial18n> = {
     "knife.title": "刀具选择",
     "knife.selectType": "刀具类型",
     "knife.selectPaint": "刀具涂装",
+    "knife.wear": "磨损",
+    "knife.seed": "图案",
 
     // Glove Panel
     "glove.title": "手套选择",
