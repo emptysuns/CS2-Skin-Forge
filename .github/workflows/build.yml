@@ -17,13 +17,10 @@ jobs:
         include:
           - platform: windows-latest
             target: x86_64-pc-windows-msvc
-            bundle: nsis
           - platform: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            bundle: appimage
           - platform: macos-latest
             target: aarch64-apple-darwin
-            bundle: dmg
 
     runs-on: ${{ matrix.platform }}
 
@@ -40,73 +37,27 @@ jobs:
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Rust cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: './Panel/src-tauri -> target'
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
-          cache: 'npm'
-          cache-dependency-path: './Panel/package-lock.json'
 
       - name: Install frontend dependencies
         run: npm ci
         working-directory: ./Panel
 
-      - name: Build Tauri app
+      - name: Build and release Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: './Panel'
-          args: '--target ${{ matrix.target }}'
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-${{ matrix.target }}
-          path: |
-            Panel/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.dmg
-            Panel/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.app.tar.gz
-            Panel/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.AppImage
-            Panel/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.deb
-            Panel/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.exe
-            Panel/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.msi
-            Panel/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.nsis.zip
-          if-no-files-found: warn
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: CS2 Skin Mod ${{ github.ref_name }}
-          body: |
+          tagName: ${{ github.ref_name }}
+          releaseName: 'CS2 Skin Mod ${{ github.ref_name }}'
+          releaseBody: |
             # CS2 Skin Mod ${{ github.ref_name }}
 
             A local-only skin customization plugin for Counter-Strike 2.
-
-            ## Downloads
-
-            - **Windows**: Download `CS2.Skin.Mod_*_x64-setup.exe`
-            - **Linux**: Download `CS2.Skin.Mod_*_amd64.AppImage`
-            - **macOS**: Download `CS2.Skin.Mod_*_aarch64.dmg`
 
             See [README](https://github.com/${{ github.repository }}/blob/main/README.md) for instructions.
 
@@ -114,21 +65,7 @@ jobs:
 
             # 中文说明
 
-            一个用于 CS2 的本地皮肤自定义插件。
-
-            ## 下载
-
-            - **Windows**: 下载 `CS2.Skin.Mod_*_x64-setup.exe`
-            - **Linux**: 下载 `CS2.Skin.Mod_*_amd64.AppImage`
-            - **macOS**: 下载 `CS2.Skin.Mod_*_aarch64.dmg`
-
-            详细说明请查看 [中文文档](https://github.com/${{ github.repository }}/blob/main/README_CN.md)。
-          draft: false
+            一个用于 CS2 的本地皮肤自定义插件。详细说明请查看 [中文文档](https://github.com/${{ github.repository }}/blob/main/README_CN.md)。
+          releaseDraft: false
           prerelease: false
-          files: |
-            artifacts/**/*.exe
-            artifacts/**/*.msi
-            artifacts/**/*.AppImage
-            artifacts/**/*.deb
-            artifacts/**/*.dmg
-            artifacts/**/*.app.tar.gz
+          args: '--target ${{ matrix.target }}'
