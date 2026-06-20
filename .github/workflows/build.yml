@@ -126,5 +126,5 @@ jobs:
             一个用于 CS2 的本地皮肤自定义插件。详细说明请查看 [中文文档](https://github.com/${{ github.repository }}/blob/main/README_CN.md)。
           draft: false
           prerelease: false
-          replace_artifacts: true
+          overwrite_files: true
           files: release-files/*
