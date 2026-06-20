@@ -10,12 +10,17 @@ interface WeaponPanelProps {
 }
 
 export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedWeapon, setSelectedWeapon] = useState<number | null>(null);
   const [activeStickerSlot, setActiveStickerSlot] = useState(0);
 
   const filteredWeapons = getWeaponsByCategory(selectedCategory);
+  const isChinese = lang === 'schinese' || lang === 'tchinese';
+
+  const getDisplayName = (weapon: { name: string; nameZh: string }) => {
+    return isChinese ? weapon.nameZh : weapon.name;
+  };
 
   const handlePaintSelect = (defindex: number, paintId: number) => {
     updateLoadout({
@@ -85,7 +90,7 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
               <img src={getWeaponImageUrl(weapon.defindex)} alt={weapon.name}
                 className="w-full h-12 object-contain mb-1 opacity-90"
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-              <div className="text-xs font-semibold text-white truncate">{weapon.name}</div>
+              <div className="text-xs font-semibold text-white truncate">{getDisplayName(weapon)}</div>
               {hasCustomPaint && <div className="text-xs text-green-400 mt-0.5">✓ {t("preview.custom")}</div>}
             </button>
           );
@@ -96,7 +101,7 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
         <div className="card">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-white">
-              {weapons.find(w => w.defindex === selectedWeapon)?.name} - {t("weapon.selectPaint")}
+              {getDisplayName(weapons.find(w => w.defindex === selectedWeapon)!)} - {t("weapon.selectPaint")}
             </h3>
             {loadout.weaponPaints[selectedWeapon] !== undefined && (
               <button onClick={() => clearWeaponPaint(selectedWeapon)} className="text-xs text-red-400 hover:text-red-300">
@@ -107,11 +112,16 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-48 overflow-y-auto">
             {weaponPaints[selectedWeapon].map(paint => (
               <button key={paint.id} onClick={() => handlePaintSelect(selectedWeapon, paint.id)}
-                className={`p-2 rounded-md text-xs font-medium transition-all duration-200 truncate ${
+                className={`flex flex-col items-center p-2 rounded-md text-xs font-medium transition-all duration-200 ${
                   loadout.weaponPaints[selectedWeapon] === paint.id
-                    ? 'bg-amber-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    ? 'bg-amber-600 text-white ring-1 ring-amber-400' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}>
-                {paint.name}
+                {paint.image && (
+                  <img src={paint.image} alt={paint.name}
+                    className="w-full h-12 object-contain mb-1"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                )}
+                <span className="truncate w-full text-center">{paint.name}</span>
               </button>
             ))}
           </div>

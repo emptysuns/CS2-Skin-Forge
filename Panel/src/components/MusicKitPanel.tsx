@@ -48,7 +48,15 @@ export default function MusicKitPanel({ loadout, updateLoadout }: MusicKitPanelP
             `}
           >
             <div className="flex items-center space-x-2">
-              <span className="text-base">🎵</span>
+              {kit.image ? (
+                <img src={kit.image} alt={kit.name}
+                  className="w-10 h-10 object-contain rounded"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              ) : (
+                <div className="w-8 h-8 rounded-md bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm">
+                  ♪
+                </div>
+              )}
               <div className="text-xs font-medium text-white truncate">{kit.name}</div>
             </div>
           </button>

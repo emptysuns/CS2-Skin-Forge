@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Loadout } from '../utils/types';
-import { knives } from '../data/knives';
+import { knives, getKnifeImageUrl } from '../data/knives';
 import { knifePaints } from '../data/skins';
 import { useT } from '../i18n';
 
@@ -10,7 +10,8 @@ interface KnifePanelProps {
 }
 
 export default function KnifePanel({ loadout, updateLoadout }: KnifePanelProps) {
-  const { t } = useT();
+  const { t, lang } = useT();
+  const isChinese = lang === 'schinese' || lang === 'tchinese';
   const [selectedKnife, setSelectedKnife] = useState<number | null>(
     loadout.knifeIndex >= 0 ? loadout.knifeIndex : null
   );
@@ -62,8 +63,13 @@ export default function KnifePanel({ loadout, updateLoadout }: KnifePanelProps) 
               }
             `}
           >
-            <div className="text-2xl mb-1">🔪</div>
-            <div className="text-xs font-semibold text-white">{knife.name}</div>
+            <img
+              src={getKnifeImageUrl(knife.codename)}
+              alt={knife.name}
+              className="w-full h-12 object-contain mb-1 opacity-90"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+            <div className="text-xs font-semibold text-white">{isChinese ? knife.nameZh : knife.name}</div>
           </button>
         ))}
       </div>
@@ -71,22 +77,25 @@ export default function KnifePanel({ loadout, updateLoadout }: KnifePanelProps) 
       {selectedKnife !== null && (
         <div className="card">
           <h3 className="text-sm font-semibold text-white mb-3">
-            {knives[selectedKnife].name} - {t("knife.selectPaint")}
+            {isChinese ? knives[selectedKnife].nameZh : knives[selectedKnife].name} - {t("knife.selectPaint")}
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5">
             {knifePaints.map(paint => (
               <button
                 key={paint.id}
                 onClick={() => handlePaintSelect(paint.id)}
-                className={`
-                  p-2 rounded-md text-xs font-medium transition-all duration-200
-                  ${loadout.knifePaint === paint.id
-                    ? 'bg-amber-600 text-white'
+                className={`flex flex-col items-center p-2 rounded-md text-xs font-medium transition-all duration-200 ${
+                  loadout.knifePaint === paint.id
+                    ? 'bg-amber-600 text-white ring-1 ring-amber-400'
                     : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  }
-                `}
+                }`}
               >
-                {paint.name}
+                {paint.image && (
+                  <img src={paint.image} alt={paint.name}
+                    className="w-full h-12 object-contain mb-1"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                )}
+                <span className="truncate w-full text-center">{paint.name}</span>
               </button>
             ))}
           </div>
