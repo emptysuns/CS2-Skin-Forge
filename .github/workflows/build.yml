@@ -139,7 +139,12 @@ jobs:
             if [ -f "$f" ]; then
               base="${f%.*}"
               ext="${f##*.}"
-              mv "$f" "${base}-${VERSION}.${ext}"
+              # Skip rename if version is already in the filename
+              if echo "$base" | grep -q "$VERSION"; then
+                echo "Skipping $f (already contains version $VERSION)"
+              else
+                mv "$f" "${base}-${VERSION}.${ext}"
+              fi
             fi
           done
 
