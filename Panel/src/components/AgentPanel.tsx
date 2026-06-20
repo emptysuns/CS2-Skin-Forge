@@ -68,7 +68,7 @@ export default function AgentPanel({ loadout, updateLoadout }: AgentPanelProps) 
                 ? 'ring-2 ring-amber-500 border-amber-500 bg-amber-900/20'
                 : 'hover:border-gray-500'
               }
-            `)}
+            `}
           >
             {model.image ? (
               <img src={model.image} alt={model.name}
