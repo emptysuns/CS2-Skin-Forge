@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/crates/tauri-config-schema/schema.json",
-  "productName": "CS2 Skin Mod",
+  "productName": "CS2-Skin-Mod",
   "version": "1.0.0",
   "identifier": "com.cs2skinmod.panel",
   "build": {
