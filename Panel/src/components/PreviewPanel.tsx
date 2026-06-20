@@ -1,6 +1,6 @@
 import { Loadout } from '../utils/types';
 import { knives } from '../data/knives';
-import { gloves, musicKits, knifePaints } from '../data/skins';
+import { gloves, musicKits } from '../data/skins';
 import { useT } from '../i18n';
 
 interface PreviewPanelProps {
@@ -15,23 +15,9 @@ export default function PreviewPanel({ loadout }: PreviewPanelProps) {
     return knives[loadout.knifeIndex]?.name || t("preview.notSelected");
   };
 
-  const getKnifePaintName = () => {
-    if (loadout.knifePaint === -1) return t("preview.notSelected");
-    return knifePaints.find(p => p.id === loadout.knifePaint)?.name || t("preview.notSelected");
-  };
-
   const getGloveName = () => {
     if (loadout.gloveIndex === -1) return t("preview.notSelected");
     return gloves[loadout.gloveIndex]?.name || t("preview.notSelected");
-  };
-
-  const getGlovePaintName = () => {
-    if (loadout.glovePaint === -1) return t("preview.notSelected");
-    for (const glove of gloves) {
-      const paint = glove.paints.find(p => p.id === loadout.glovePaint);
-      if (paint) return paint.name;
-    }
-    return t("preview.notSelected");
   };
 
   const getMusicKitName = () => {

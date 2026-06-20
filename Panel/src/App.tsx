@@ -17,7 +17,7 @@ function App() {
   const { t } = useT();
   const [activeTab, setActiveTab] = useState('weapons');
   const [showSettings, setShowSettings] = useState(false);
-  const [config, setConfig] = useState<AppConfig | null>(null);
+  const [_config, setConfig] = useState<AppConfig | null>(null);
   const [loadout, setLoadout] = useState<Loadout>({
     weaponPaints: {},
     knifeIndex: -1,
