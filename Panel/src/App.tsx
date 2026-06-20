@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from './components/Header';
 import TabNavigation from './components/TabNavigation';
 import WeaponPanel from './components/WeaponPanel';
@@ -8,10 +8,16 @@ import AgentPanel from './components/AgentPanel';
 import MusicKitPanel from './components/MusicKitPanel';
 import PreviewPanel from './components/PreviewPanel';
 import StatusBar from './components/StatusBar';
+import SettingsPanel from './components/SettingsPanel';
 import { Loadout } from './utils/types';
+import { useT } from './i18n';
+import { api, type AppConfig } from './lib/api';
 
 function App() {
+  const { t } = useT();
   const [activeTab, setActiveTab] = useState('weapons');
+  const [showSettings, setShowSettings] = useState(false);
+  const [config, setConfig] = useState<AppConfig | null>(null);
   const [loadout, setLoadout] = useState<Loadout>({
     weaponPaints: {},
     knifeIndex: -1,
@@ -25,12 +31,37 @@ function App() {
 
   const [status, setStatus] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
+  // Load config and saved loadout on mount
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const cfg = await api.getConfig();
+        setConfig(cfg);
+        // Try to load saved loadout for slot 0 (local player)
+        const saved = await api.loadLoadout(0);
+        if (saved) {
+          setLoadout(saved);
+        }
+      } catch (e) {
+        console.error("Failed to initialize:", e);
+      }
+    };
+    init();
+  }, []);
+
   const updateLoadout = (updates: Partial<Loadout>) => {
     setLoadout(prev => ({ ...prev, ...updates }));
   };
 
-  const handleApply = () => {
-    setStatus({ message: 'Loadout applied! Changes will take effect on next spawn.', type: 'success' });
+  const handleApply = async () => {
+    try {
+      // Save loadout to file for the addon to read
+      await api.saveLoadout(0, loadout);
+      setStatus({ message: t("status.applied"), type: 'success' });
+    } catch (e) {
+      console.error("Failed to save loadout:", e);
+      setStatus({ message: t("status.error"), type: 'error' });
+    }
     setTimeout(() => setStatus(null), 3000);
   };
 
@@ -45,7 +76,7 @@ function App() {
       musicKit: -1,
       useRandom: true,
     });
-    setStatus({ message: 'All skins reset to random!', type: 'info' });
+    setStatus({ message: t("status.reset"), type: 'info' });
     setTimeout(() => setStatus(null), 3000);
   };
 
@@ -68,7 +99,7 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" data-tauri-drag-region>
-      <Header />
+      <Header onSettingsClick={() => setShowSettings(true)} />
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-4 overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-full">
@@ -83,10 +114,10 @@ function App() {
             <PreviewPanel loadout={loadout} />
             <div className="card space-y-3">
               <button onClick={handleApply} className="btn-primary w-full">
-                Apply Loadout
+                {t("btn.apply")}
               </button>
               <button onClick={handleReset} className="btn-secondary w-full">
-                Reset to Random
+                {t("btn.reset")}
               </button>
             </div>
           </div>
@@ -94,6 +125,12 @@ function App() {
       </main>
 
       <StatusBar status={status} />
+
+      <SettingsPanel
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        onConfigSaved={setConfig}
+      />
     </div>
   );
 }

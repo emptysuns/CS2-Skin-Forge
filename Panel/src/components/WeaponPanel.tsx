@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Loadout } from '../utils/types';
 import { weapons, weaponCategories, getWeaponsByCategory } from '../data/weapons';
 import { weaponPaints } from '../data/skins';
+import { useT } from '../i18n';
 
 interface WeaponPanelProps {
   loadout: Loadout;
@@ -9,6 +10,7 @@ interface WeaponPanelProps {
 }
 
 export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps) {
+  const { t } = useT();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedWeapon, setSelectedWeapon] = useState<number | null>(null);
 
@@ -30,6 +32,19 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
     });
   };
 
+  // Translate category names
+  const getCategoryLabel = (category: string) => {
+    const keyMap: Record<string, string> = {
+      'All': 'weapon.all',
+      'Pistols': 'weapon.pistols',
+      'Rifles': 'weapon.rifles',
+      'Snipers': 'weapon.snipers',
+      'SMGs': 'weapon.smgs',
+      'Heavy': 'weapon.heavy',
+    };
+    return t(keyMap[category] as any) || category;
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-1.5">
@@ -43,7 +58,7 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
           >
-            {category}
+            {getCategoryLabel(category)}
           </button>
         ))}
       </div>
@@ -66,7 +81,7 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
               <div className="text-xs font-semibold text-white truncate">{weapon.name}</div>
               <div className="text-xs text-gray-400 mt-0.5">{weapon.category}</div>
               {hasCustomPaint && (
-                <div className="text-xs text-green-400 mt-1">✓ Custom</div>
+                <div className="text-xs text-green-400 mt-1">✓ {t("preview.custom")}</div>
               )}
             </button>
           );
@@ -77,14 +92,14 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
         <div className="card">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-white">
-              {weapons.find(w => w.defindex === selectedWeapon)?.name} Skins
+              {weapons.find(w => w.defindex === selectedWeapon)?.name} - {t("weapon.selectPaint")}
             </h3>
             {loadout.weaponPaints[selectedWeapon] !== undefined && (
               <button
                 onClick={() => clearWeaponPaint(selectedWeapon)}
                 className="text-xs text-red-400 hover:text-red-300"
               >
-                Reset
+                {t("btn.reset")}
               </button>
             )}
           </div>
@@ -110,8 +125,7 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
 
       {selectedWeapon && !weaponPaints[selectedWeapon] && (
         <div className="card text-center py-6">
-          <p className="text-sm text-gray-400">Paint data not available for this weapon.</p>
-          <p className="text-xs text-gray-500 mt-1">This weapon will use a random skin.</p>
+          <p className="text-sm text-gray-400">{t("weapon.noPaint")}</p>
         </div>
       )}
     </div>

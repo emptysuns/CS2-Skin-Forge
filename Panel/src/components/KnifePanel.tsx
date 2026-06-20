@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Loadout } from '../utils/types';
 import { knives } from '../data/knives';
 import { knifePaints } from '../data/skins';
+import { useT } from '../i18n';
 
 interface KnifePanelProps {
   loadout: Loadout;
@@ -9,6 +10,7 @@ interface KnifePanelProps {
 }
 
 export default function KnifePanel({ loadout, updateLoadout }: KnifePanelProps) {
+  const { t } = useT();
   const [selectedKnife, setSelectedKnife] = useState<number | null>(
     loadout.knifeIndex >= 0 ? loadout.knifeIndex : null
   );
@@ -43,8 +45,8 @@ export default function KnifePanel({ loadout, updateLoadout }: KnifePanelProps) 
           }
         `}
       >
-        <div className="text-sm font-semibold text-white">🎲 Random Knife</div>
-        <div className="text-xs text-gray-400 mt-0.5">Randomly select from all available knives</div>
+        <div className="text-sm font-semibold text-white">🎲 {t("preview.random")}</div>
+        <div className="text-xs text-gray-400 mt-0.5">{t("knife.selectType")}</div>
       </button>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
@@ -69,7 +71,7 @@ export default function KnifePanel({ loadout, updateLoadout }: KnifePanelProps) 
       {selectedKnife !== null && (
         <div className="card">
           <h3 className="text-sm font-semibold text-white mb-3">
-            {knives[selectedKnife].name} Skins
+            {knives[selectedKnife].name} - {t("knife.selectPaint")}
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5">
             {knifePaints.map(paint => (
@@ -90,18 +92,6 @@ export default function KnifePanel({ loadout, updateLoadout }: KnifePanelProps) 
           </div>
         </div>
       )}
-
-      <div className="card bg-blue-900/20 border-blue-500/30">
-        <div className="flex items-start space-x-2">
-          <span className="text-blue-400">ℹ️</span>
-          <div>
-            <h4 className="text-xs font-semibold text-blue-300">Knife Skins</h4>
-            <p className="text-xs text-blue-200/70 mt-0.5">
-              Select a knife type and skin. Changes visible on next spawn. Visual only.
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

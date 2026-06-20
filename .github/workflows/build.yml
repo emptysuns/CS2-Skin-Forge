@@ -106,6 +106,12 @@ jobs:
         run: |
           mkdir -p release-files
           find artifacts -type f \( -name "*.exe" -o -name "*.msi" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.dmg" \) -not -name "*.sig" -exec cp {} release-files/ \;
+
+          # Create addons zip with the CS2 plugin
+          cd addons
+          zip -r ../release-files/addons.zip counterstrikesharp/
+          cd ..
+
           echo "=== Files to release ==="
           ls -la release-files/
           echo "file_count=$(ls release-files/ | wc -l)" >> $GITHUB_OUTPUT
@@ -128,13 +134,25 @@ jobs:
 
             A local-only skin customization plugin for Counter-Strike 2.
 
-            See [README](https://github.com/${{ github.repository }}/blob/main/README.md) for instructions.
+            ## Installation
+
+            1. Download and install the panel app for your platform
+            2. Download `addons.zip` and extract to your CS2 `game/csgo/` directory
+            3. Add `-insecure` to CS2 launch options
+            4. Launch the panel, set your CS2 path in Settings, and customize!
+
+            See [README](https://github.com/${{ github.repository }}/blob/main/README.md) for detailed instructions.
 
             ---
 
             # 中文说明
 
-            一个用于 CS2 的本地皮肤自定义插件。详细说明请查看 [中文文档](https://github.com/${{ github.repository }}/blob/main/README_CN.md)。
+            1. 下载并安装适合您平台的面板应用
+            2. 下载 `addons.zip` 并解压到 CS2 的 `game/csgo/` 目录
+            3. 在 CS2 启动选项中添加 `-insecure`
+            4. 启动面板，在设置中设置 CS2 路径，然后开始自定义！
+
+            详细说明请查看 [中文文档](https://github.com/${{ github.repository }}/blob/main/README_CN.md)。
           draft: false
           prerelease: false
           overwrite_files: true

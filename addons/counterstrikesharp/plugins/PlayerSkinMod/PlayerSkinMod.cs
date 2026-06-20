@@ -1,6 +1,7 @@
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
@@ -14,7 +15,7 @@ namespace PlayerSkinMod;
 public class PlayerSkinModPlugin : BasePlugin
 {
     public override string ModuleName        => "PlayerSkinMod";
-    public override string ModuleVersion     => "1.0.0";
+    public override string ModuleVersion     => "1.1.0";
     public override string ModuleAuthor      => "CS2-Skin-local-mod";
     public override string ModuleDescription => "Allow players to customize weapon skins, knives, gloves, agent models, music kits locally";
 
@@ -26,6 +27,9 @@ public class PlayerSkinModPlugin : BasePlugin
     private MemoryFunctionVoid<nint, string, float>? _setAttrByName;
     private ulong _nextItemId = 0xF00DCAFE;
     private bool _skinErrorLogged = false;
+
+    // Loadout file path - will be set in Load()
+    private string _loadoutFilePath = "";
 
     // Legacy paint detection
     private readonly HashSet<(ushort DefIndex, int Paint)> _legacyPaints = new();
@@ -256,6 +260,39 @@ public class PlayerSkinModPlugin : BasePlugin
         _skinErrorLogged = false;
         LoadLegacyPaints();
 
+        // Set up loadout file path - store in the plugin directory
+        _loadoutFilePath = Path.Combine(ModuleDirectory, "player_loadout.json");
+
+        // Load any saved loadout from the panel
+        LoadLoadoutFromFile();
+
+        // Set up a file watcher to reload when the panel saves a new loadout
+        try
+        {
+            var watcher = new FileSystemWatcher(ModuleDirectory, "player_loadout.json")
+            {
+                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime,
+                EnableRaisingEvents = true
+            };
+            watcher.Changed += (sender, e) =>
+            {
+                // Small delay to ensure file is fully written
+                System.Threading.Thread.Sleep(100);
+                LoadLoadoutFromFile();
+                Logger.LogInformation("[PlayerSkinMod] Loadout file changed, reloaded");
+            };
+            watcher.Created += (sender, e) =>
+            {
+                System.Threading.Thread.Sleep(100);
+                LoadLoadoutFromFile();
+                Logger.LogInformation("[PlayerSkinMod] Loadout file created, loaded");
+            };
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"[PlayerSkinMod] Could not set up file watcher: {ex.Message}");
+        }
+
         try
         {
             _setAttrByName = new MemoryFunctionVoid<nint, string, float>(
@@ -300,9 +337,10 @@ public class PlayerSkinModPlugin : BasePlugin
     private void OnSkinMenuCommand(CCSPlayerController? player, CommandInfo command)
     {
         if (player == null || !player.IsValid) return;
-        // Send URL to player's browser overlay
-        player.PrintToChat(" \x04[PlayerSkinMod]\x01 Open your browser to: http://localhost:3000");
-        player.PrintToChat(" \x04[PlayerSkinMod]\x01 Use the panel to customize your skins!");
+        // Reload loadout from file in case panel saved while in-game
+        LoadLoadoutFromFile();
+        player.PrintToChat(" \x04[PlayerSkinMod]\x01 Loadout reloaded from panel!");
+        player.PrintToChat(" \x04[PlayerSkinMod]\x10 Respawn to apply new skins.");
     }
 
     private void OnSkinRandomCommand(CCSPlayerController? player, CommandInfo command)
@@ -632,6 +670,71 @@ public class PlayerSkinModPlugin : BasePlugin
         item.ItemID = id;
         item.ItemIDLow = (uint)(id & 0xFFFFFFFF);
         item.ItemIDHigh = (uint)(id >> 32);
+    }
+
+    private void LoadLoadoutFromFile()
+    {
+        try
+        {
+            if (!File.Exists(_loadoutFilePath))
+            {
+                Logger.LogInformation($"[PlayerSkinMod] Loadout file not found: {_loadoutFilePath} (will use random skins)");
+                return;
+            }
+
+            var json = File.ReadAllText(_loadoutFilePath);
+            if (string.IsNullOrWhiteSpace(json)) return;
+
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            // The file contains loadouts for all players (keyed by slot)
+            // For local play, there's typically only slot 0
+            foreach (var prop in root.EnumerateObject())
+            {
+                if (!int.TryParse(prop.Name, out int slot)) continue;
+                var loadoutEl = prop.Value;
+
+                var loadout = new PlayerLoadout();
+
+                if (loadoutEl.TryGetProperty("useRandom", out var useRandomEl))
+                    loadout.UseRandom = useRandomEl.GetBoolean();
+
+                if (loadoutEl.TryGetProperty("knifeIndex", out var knifeIdxEl) && knifeIdxEl.GetInt32() >= 0)
+                    loadout.KnifeIndex = knifeIdxEl.GetInt32();
+
+                if (loadoutEl.TryGetProperty("knifePaint", out var knifePaintEl) && knifePaintEl.GetInt32() >= 0)
+                    loadout.KnifePaint = knifePaintEl.GetInt32();
+
+                if (loadoutEl.TryGetProperty("gloveIndex", out var gloveIdxEl) && gloveIdxEl.GetInt32() >= 0)
+                    loadout.GloveIndex = gloveIdxEl.GetInt32();
+
+                if (loadoutEl.TryGetProperty("glovePaint", out var glovePaintEl) && glovePaintEl.GetInt32() >= 0)
+                    loadout.GlovePaint = glovePaintEl.GetInt32();
+
+                if (loadoutEl.TryGetProperty("agentModel", out var agentEl) && agentEl.GetInt32() >= 0)
+                    loadout.AgentModel = agentEl.GetInt32();
+
+                if (loadoutEl.TryGetProperty("musicKit", out var musicEl) && musicEl.GetInt32() >= 0)
+                    loadout.MusicKit = musicEl.GetInt32();
+
+                if (loadoutEl.TryGetProperty("weaponPaints", out var wpEl))
+                {
+                    foreach (var wp in wpEl.EnumerateObject())
+                    {
+                        if (ushort.TryParse(wp.Name, out ushort defIndex) && wp.Value.GetInt32() >= 0)
+                            loadout.WeaponPaints[defIndex] = wp.Value.GetInt32();
+                    }
+                }
+
+                _playerLoadouts[slot] = loadout;
+                Logger.LogInformation($"[PlayerSkinMod] Loaded loadout for slot {slot}: knife={loadout.KnifeIndex}, glove={loadout.GloveIndex}, agent={loadout.AgentModel}, music={loadout.MusicKit}, weapons={loadout.WeaponPaints.Count}, random={loadout.UseRandom}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[PlayerSkinMod] LoadLoadoutFromFile failed: {ex.Message}");
+        }
     }
 
     private void LoadLegacyPaints()

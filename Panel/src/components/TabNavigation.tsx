@@ -1,15 +1,17 @@
+import { useT, type I18nKey } from "../i18n";
+
 interface Tab {
   id: string;
-  label: string;
+  labelKey: I18nKey;
   icon: string;
 }
 
 const tabs: Tab[] = [
-  { id: 'weapons', label: 'Weapons', icon: '🔫' },
-  { id: 'knives', label: 'Knives', icon: '🔪' },
-  { id: 'gloves', label: 'Gloves', icon: '🧤' },
-  { id: 'agents', label: 'Agents', icon: '👤' },
-  { id: 'music', label: 'Music', icon: '🎵' },
+  { id: 'weapons', labelKey: 'tab.weapons', icon: '🔫' },
+  { id: 'knives', labelKey: 'tab.knives', icon: '🔪' },
+  { id: 'gloves', labelKey: 'tab.gloves', icon: '🧤' },
+  { id: 'agents', labelKey: 'tab.agents', icon: '👤' },
+  { id: 'music', labelKey: 'tab.music', icon: '🎵' },
 ];
 
 interface TabNavigationProps {
@@ -18,6 +20,8 @@ interface TabNavigationProps {
 }
 
 export default function TabNavigation({ activeTab, setActiveTab }: TabNavigationProps) {
+  const { t } = useT();
+
   return (
     <nav className="flex space-x-1 bg-gray-800/50 p-1 rounded-lg border border-gray-700">
       {tabs.map(tab => (
@@ -34,7 +38,7 @@ export default function TabNavigation({ activeTab, setActiveTab }: TabNavigation
           `}
         >
           <span>{tab.icon}</span>
-          <span>{tab.label}</span>
+          <span>{t(tab.labelKey)}</span>
         </button>
       ))}
     </nav>

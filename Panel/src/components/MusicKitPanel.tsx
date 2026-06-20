@@ -1,5 +1,6 @@
 import { Loadout } from '../utils/types';
 import { musicKits } from '../data/skins';
+import { useT } from '../i18n';
 
 interface MusicKitPanelProps {
   loadout: Loadout;
@@ -7,6 +8,8 @@ interface MusicKitPanelProps {
 }
 
 export default function MusicKitPanel({ loadout, updateLoadout }: MusicKitPanelProps) {
+  const { t } = useT();
+
   const handleMusicKitSelect = (kitId: number) => {
     updateLoadout({ musicKit: kitId, useRandom: false });
   };
@@ -27,8 +30,8 @@ export default function MusicKitPanel({ loadout, updateLoadout }: MusicKitPanelP
           }
         `}
       >
-        <div className="text-sm font-semibold text-white">🎵 Random Music Kit</div>
-        <div className="text-xs text-gray-400 mt-0.5">Randomly select from available music kits</div>
+        <div className="text-sm font-semibold text-white">🎵 {t("preview.random")}</div>
+        <div className="text-xs text-gray-400 mt-0.5">{t("music.title")}</div>
       </button>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
@@ -50,18 +53,6 @@ export default function MusicKitPanel({ loadout, updateLoadout }: MusicKitPanelP
             </div>
           </button>
         ))}
-      </div>
-
-      <div className="card bg-pink-900/20 border-pink-500/30">
-        <div className="flex items-start space-x-2">
-          <span className="text-pink-400">🎵</span>
-          <div>
-            <h4 className="text-xs font-semibold text-pink-300">Music Kits</h4>
-            <p className="text-xs text-pink-200/70 mt-0.5">
-              Music kits play when you get MVP. Displayed in MVP screen.
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   );

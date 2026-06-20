@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Loadout } from '../utils/types';
 import { gloves } from '../data/skins';
+import { useT } from '../i18n';
 
 interface GlovePanelProps {
   loadout: Loadout;
@@ -8,6 +9,7 @@ interface GlovePanelProps {
 }
 
 export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) {
+  const { t } = useT();
   const [selectedGlove, setSelectedGlove] = useState<number | null>(
     loadout.gloveIndex >= 0 ? loadout.gloveIndex : null
   );
@@ -43,8 +45,8 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
           }
         `}
       >
-        <div className="text-sm font-semibold text-white">🧤 Random Gloves</div>
-        <div className="text-xs text-gray-400 mt-0.5">Randomly select from all available gloves</div>
+        <div className="text-sm font-semibold text-white">🧤 {t("preview.random")}</div>
+        <div className="text-xs text-gray-400 mt-0.5">{t("glove.selectType")}</div>
       </button>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -64,7 +66,7 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
               <span className="text-xl">🧤</span>
               <div>
                 <div className="text-xs font-semibold text-white">{glove.name}</div>
-                <div className="text-xs text-gray-400">{glove.paints.length} skins</div>
+                <div className="text-xs text-gray-400">{glove.paints.length} {t("tab.gloves").toLowerCase()}</div>
               </div>
             </div>
           </button>
@@ -74,7 +76,7 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
       {selectedGlove !== null && (
         <div className="card">
           <h3 className="text-sm font-semibold text-white mb-3">
-            {gloves[selectedGlove].name} Skins
+            {gloves[selectedGlove].name} - {t("glove.selectPaint")}
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
             {gloves[selectedGlove].paints.map(paint => (
@@ -95,18 +97,6 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
           </div>
         </div>
       )}
-
-      <div className="card bg-purple-900/20 border-purple-500/30">
-        <div className="flex items-start space-x-2">
-          <span className="text-purple-400">🧤</span>
-          <div>
-            <h4 className="text-xs font-semibold text-purple-300">Glove Skins</h4>
-            <p className="text-xs text-purple-200/70 mt-0.5">
-              Gloves are visible in first-person view. Select a glove type and skin.
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

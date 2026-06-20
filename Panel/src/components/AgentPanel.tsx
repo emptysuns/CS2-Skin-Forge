@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Loadout } from '../utils/types';
 import { agentModels } from '../data/skins';
+import { useT } from '../i18n';
 
 interface AgentPanelProps {
   loadout: Loadout;
@@ -8,6 +9,7 @@ interface AgentPanelProps {
 }
 
 export default function AgentPanel({ loadout, updateLoadout }: AgentPanelProps) {
+  const { t } = useT();
   const [selectedTeam, setSelectedTeam] = useState<'ct' | 't'>('ct');
 
   const handleAgentSelect = (modelId: number) => {
@@ -29,7 +31,7 @@ export default function AgentPanel({ loadout, updateLoadout }: AgentPanelProps) 
             selectedTeam === 'ct' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
           }`}
         >
-          🔵 Counter-Terrorist
+          🔵 {t("agent.ct")}
         </button>
         <button
           onClick={() => setSelectedTeam('t')}
@@ -37,7 +39,7 @@ export default function AgentPanel({ loadout, updateLoadout }: AgentPanelProps) 
             selectedTeam === 't' ? 'bg-orange-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
           }`}
         >
-          🟠 Terrorist
+          🟠 {t("agent.t")}
         </button>
       </div>
 
@@ -51,8 +53,8 @@ export default function AgentPanel({ loadout, updateLoadout }: AgentPanelProps) 
           }
         `}
       >
-        <div className="text-sm font-semibold text-white">👤 Random Agent</div>
-        <div className="text-xs text-gray-400 mt-0.5">Randomly select from available agents</div>
+        <div className="text-sm font-semibold text-white">👤 {t("preview.random")}</div>
+        <div className="text-xs text-gray-400 mt-0.5">{t("agent.title")}</div>
       </button>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-64 overflow-y-auto">
@@ -72,18 +74,6 @@ export default function AgentPanel({ loadout, updateLoadout }: AgentPanelProps) 
             <div className="text-xs font-medium text-white truncate">{model.name}</div>
           </button>
         ))}
-      </div>
-
-      <div className="card bg-green-900/20 border-green-500/30">
-        <div className="flex items-start space-x-2">
-          <span className="text-green-400">ℹ️</span>
-          <div>
-            <h4 className="text-xs font-semibold text-green-300">Agent Models</h4>
-            <p className="text-xs text-green-200/70 mt-0.5">
-              Agent models are team-specific. Changes on next spawn.
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   );
