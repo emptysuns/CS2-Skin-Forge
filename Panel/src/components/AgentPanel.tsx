@@ -13,11 +13,12 @@ export default function AgentPanel({ loadout, updateLoadout }: AgentPanelProps) 
   const [selectedTeam, setSelectedTeam] = useState<'ct' | 't'>('ct');
 
   const handleAgentSelect = (modelId: string) => {
-    const idx = parseInt(modelId, 10);
+    const arrayIndex = models.findIndex(m => m.id === modelId);
+    if (arrayIndex < 0) return;
     if (selectedTeam === 'ct') {
-      updateLoadout({ agentModelCt: idx, useRandom: false });
+      updateLoadout({ agentModelCt: arrayIndex, useRandom: false });
     } else {
-      updateLoadout({ agentModelT: idx, useRandom: false });
+      updateLoadout({ agentModelT: arrayIndex, useRandom: false });
     }
   };
 
@@ -85,13 +86,13 @@ export default function AgentPanel({ loadout, updateLoadout }: AgentPanelProps) 
       </button>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-        {models.map((model) => (
+        {models.map((model, index) => (
           <button
             key={model.id}
             onClick={() => handleAgentSelect(model.id)}
             className={`
               card p-2.5 text-center transition-all duration-200
-              ${currentIdx === parseInt(model.id, 10)
+              ${currentIdx === index
                 ? 'ring-2 ring-amber-500 border-amber-500 bg-amber-900/20'
                 : 'hover:border-gray-500'
               }
