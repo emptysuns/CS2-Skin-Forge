@@ -19,7 +19,7 @@ namespace PlayerSkinMod;
 public class PlayerSkinModPlugin : BasePlugin
 {
     public override string ModuleName        => "PlayerSkinMod";
-    public override string ModuleVersion     => "1.3.4";
+    public override string ModuleVersion     => "1.3.5";
     public override string ModuleAuthor      => "CS2-Skin-local-mod";
     public override string ModuleDescription => "Allow players to customize weapon skins, knives, gloves, agent models, music kits locally";
 
@@ -71,12 +71,16 @@ public class PlayerSkinModPlugin : BasePlugin
                 // Small delay to ensure file is fully written
                 System.Threading.Thread.Sleep(100);
                 LoadoutService.LoadFromFile(_loadoutFilePath, _playerLoadouts, Logger);
+                _playerModels.Clear(); // Clear cached models so agent changes take effect
+                _playerGunPaints.Clear(); // Clear cached weapon paints so changes take effect
                 Logger.LogInformation("[PlayerSkinMod] Loadout file changed, reloaded");
             };
             watcher.Created += (sender, e) =>
             {
                 System.Threading.Thread.Sleep(100);
                 LoadoutService.LoadFromFile(_loadoutFilePath, _playerLoadouts, Logger);
+                _playerModels.Clear(); // Clear cached models so agent changes take effect
+                _playerGunPaints.Clear(); // Clear cached weapon paints so changes take effect
                 Logger.LogInformation("[PlayerSkinMod] Loadout file created, loaded");
             };
         }
@@ -214,7 +218,7 @@ public class PlayerSkinModPlugin : BasePlugin
         int kitId = loadout.MusicKit >= 0 ? StaticData.KitIds[Math.Min(loadout.MusicKit, StaticData.KitIds.Length - 1)] : StaticData.KitIds[_rng.Next(StaticData.KitIds.Length)];
 
         int knifeIdx = loadout.KnifeIndex >= 0 ? Math.Min(loadout.KnifeIndex, StaticData.Knives.Length - 1) : _rng.Next(StaticData.Knives.Length);
-        int knifePaint = loadout.KnifePaint >= 0 ? StaticData.KnifePaints[Math.Min(loadout.KnifePaint, StaticData.KnifePaints.Length - 1)] : StaticData.KnifePaints[_rng.Next(StaticData.KnifePaints.Length)];
+        int knifePaint = loadout.KnifePaint >= 0 ? loadout.KnifePaint : StaticData.KnifePaints[_rng.Next(StaticData.KnifePaints.Length)];
 
         int gloveIdx = loadout.GloveIndex >= 0 ? Math.Min(loadout.GloveIndex, StaticData.Gloves.Length - 1) : _rng.Next(StaticData.Gloves.Length);
         var glove = StaticData.Gloves[gloveIdx];
