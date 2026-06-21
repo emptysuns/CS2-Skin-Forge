@@ -204,12 +204,12 @@ public static class WeaponService
 
                 // Force glove model refresh after applying (prevents model overlap)
                 player.ExecuteClientCommand("lastinv");
-                SetBodygroup(pawn, "first_or_third_person", 0);
+                pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,0");
                 // Show gloves again after short delay
                 Server.NextFrame(() =>
                 {
                     if (pawn.IsValid)
-                        SetBodygroup(pawn, "first_or_third_person", 1);
+                        pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
                 });
             });
         }
