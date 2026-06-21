@@ -223,7 +223,8 @@ public class PlayerSkinModPlugin : BasePlugin
         int knifePaint = loadout.KnifePaint >= 0 ? loadout.KnifePaint : StaticData.KnifePaints[_rng.Next(StaticData.KnifePaints.Length)];
 
         // Use per-team glove configuration
-        int gloveIdx, glovePaint, gloveDefIndex;
+        int gloveIdx, glovePaint;
+        ushort gloveDefIndex;
         int gloveSeed;
         float gloveWear;
         if (isCT)
