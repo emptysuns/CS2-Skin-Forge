@@ -284,14 +284,26 @@ fn deploy_addons() -> Result<String, String> {
         .join("plugins")
         .join("PlayerSkinMod");
 
+    // Tauri v2 NSIS installer puts resources in _up_/_up_/ subdirectory
+    let nsis_resource_subdir = exe_dir
+        .join("_up_")
+        .join("_up_")
+        .join("addons")
+        .join("counterstrikesharp")
+        .join("plugins")
+        .join("PlayerSkinMod");
+
     let files_to_deploy = ["PlayerSkinMod.dll", "PlayerSkinMod.json", "skins_en.json"];
     let mut deployed = Vec::new();
     let mut skipped = Vec::new();
 
     for file in &files_to_deploy {
-        // Try multiple possible resource locations
-        let src = if resource_subdir.join(file).exists() {
-            // Tauri preserved nested path: resources/addons/.../PlayerSkinMod/
+        // Try multiple possible resource locations (priority order)
+        let src = if nsis_resource_subdir.join(file).exists() {
+            // Tauri v2 NSIS: _up_/_up_/addons/.../PlayerSkinMod/
+            nsis_resource_subdir.join(file)
+        } else if resource_subdir.join(file).exists() {
+            // Tauri dev/MSI: resources/addons/.../PlayerSkinMod/
             resource_subdir.join(file)
         } else if exe_dir.join("resources").join(file).exists() {
             // Tauri flattened: resources/PlayerSkinMod.dll
@@ -331,7 +343,8 @@ fn deploy_addons() -> Result<String, String> {
         result.push_str(&format!(" | Skipped (not found): [{}]", skipped.join(", ")));
         // Add diagnostic info about where we looked
         result.push_str(&format!(
-            " | Searched: {}, {}, {}",
+            " | Searched: {}, {}, {}, {}",
+            nsis_resource_subdir.display(),
             resource_subdir.display(),
             exe_dir.join("resources").display(),
             exe_dir.display()

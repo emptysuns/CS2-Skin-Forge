@@ -19,7 +19,7 @@ namespace PlayerSkinMod;
 public class PlayerSkinModPlugin : BasePlugin
 {
     public override string ModuleName        => "PlayerSkinMod";
-    public override string ModuleVersion     => "1.4.4";
+    public override string ModuleVersion     => "1.4.5";
     public override string ModuleAuthor      => "CS2-Skin-local-mod";
     public override string ModuleDescription => "Allow players to customize weapon skins, knives, gloves, agent models, music kits locally";
 
@@ -217,10 +217,11 @@ public class PlayerSkinModPlugin : BasePlugin
                 agentPath = loadout.AgentModelPathT;
             }
 
-            // Try path-based lookup first (panel sends model path, more reliable than index)
+            // Path-based lookup is the primary method (panel sends model path)
+            // This is more reliable than index-based because panel and StaticData arrays
+            // may have different orderings
             if (!string.IsNullOrEmpty(agentPath))
             {
-                // Normalize slashes for comparison (panel uses /, C# data uses \)
                 var normalizedPath = agentPath.Replace('/', '\\');
                 var found = Array.FindIndex(pool, m => m.Equals(normalizedPath, StringComparison.OrdinalIgnoreCase));
                 if (found >= 0)
@@ -228,14 +229,25 @@ public class PlayerSkinModPlugin : BasePlugin
                     model = pool[found];
                     Logger.LogInformation($"[PlayerSkinMod] Agent resolved by path: {agentPath} -> index {found}");
                 }
+                else
+                {
+                    // Path not found in pool - log warning and fall back to random
+                    Logger.LogWarning($"[PlayerSkinMod] Agent path not found in pool: {agentPath} (pool has {pool.Length} models)");
+                }
             }
 
-            // Fallback to index-based lookup
+            // Only use index-based fallback if NO path was provided (legacy behavior)
+            if (model == null && string.IsNullOrEmpty(agentPath) && agentIdx >= 0)
+            {
+                model = pool[Math.Min(agentIdx, pool.Length - 1)];
+                Logger.LogInformation($"[PlayerSkinMod] Agent resolved by index (no path): {agentIdx} -> {model}");
+            }
+
+            // Final fallback: random model
             if (model == null)
             {
-                model = agentIdx >= 0 ? pool[Math.Min(agentIdx, pool.Length - 1)] : pool[_rng.Next(pool.Length)];
-                if (agentIdx >= 0)
-                    Logger.LogInformation($"[PlayerSkinMod] Agent resolved by index: {agentIdx} -> {model}");
+                model = pool[_rng.Next(pool.Length)];
+                Logger.LogInformation($"[PlayerSkinMod] Agent resolved randomly -> {model}");
             }
 
             _playerModels[player.Slot] = model;

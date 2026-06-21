@@ -230,22 +230,40 @@ public static class WeaponService
 
             item.Initialized = true;
 
-            // Force glove model refresh via bodygroup toggle (NO lastinv — that causes conflicts)
+            // Force CS2 engine to recognize glove attribute changes
+            // This is critical — without SetStateChanged, the engine may not re-render the glove
+            Utilities.SetStateChanged(pawn, "CCSPlayerPawn", "m_EconGloves");
+
+            // Bodygroup toggle to force material/texture refresh (NO lastinv — causes conflicts)
+            // Multiple passes at increasing delays to handle race conditions
             pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,0");
+            Server.NextFrame(() =>
+            {
+                if (pawn.IsValid)
+                    pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
+            });
+
             if (addTimer != null)
             {
-                addTimer(0.2f, () =>
+                addTimer(0.15f, () =>
                 {
                     if (pawn.IsValid)
-                        pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
+                    {
+                        pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,0");
+                    }
                 });
-            }
-            else
-            {
-                Server.NextFrame(() =>
+                addTimer(0.30f, () =>
                 {
                     if (pawn.IsValid)
+                    {
                         pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
+                        // Re-apply attributes in case engine overwrote them during refresh
+                        var gloveItem = pawn.EconGloves;
+                        if (gloveItem.ItemDefinitionIndex == defIndex)
+                        {
+                            Utilities.SetStateChanged(pawn, "CCSPlayerPawn", "m_EconGloves");
+                        }
+                    }
                 });
             }
         }
