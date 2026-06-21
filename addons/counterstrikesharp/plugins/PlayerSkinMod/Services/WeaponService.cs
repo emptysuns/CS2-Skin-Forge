@@ -114,7 +114,6 @@ public static class WeaponService
                 setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "kill eater score type", 0);
                 setAttrByName.Invoke(item.AttributeList.Handle, "kill eater", 80);
                 setAttrByName.Invoke(item.AttributeList.Handle, "kill eater score type", 0);
-                // Set StatTrak count via attribute
                 setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "kill eater user 1", (float)statTrak.Count);
                 setAttrByName.Invoke(item.AttributeList.Handle, "kill eater user 1", (float)statTrak.Count);
             }
@@ -197,6 +196,12 @@ public static class WeaponService
         }
     }
 
+    /// <summary>
+    /// Apply gloves to a player pawn.  Follows the Nereziel/cs2-WeaponPaints
+    /// pattern: clear stale attributes, issue a "lastinv" to force the engine
+    /// to release the current glove model, then after a short delay set the
+    /// new identity + skin and force a final model/material refresh.
+    /// </summary>
     public static void ApplyGloves(
         CCSPlayerController player,
         CCSPlayerPawn pawn,
@@ -211,37 +216,54 @@ public static class WeaponService
         {
             var item = pawn.EconGloves;
 
-            // Clear stale attributes from previous glove type
+            // 1. Clear stale attributes from previous glove type
             item.NetworkedDynamicAttributes.Attributes.RemoveAll();
             item.AttributeList.Attributes.RemoveAll();
 
-            // Set glove identity — this drives which 3D model + UV layout is used
-            item.ItemDefinitionIndex = defIndex;
-            AssignItemId(item);
+            // 2. Force engine to release the old glove model (Nereziel pattern)
+            player.ExecuteClientCommand("lastinv");
 
-            // Apply skin attributes on BOTH lists (critical for CS2 rendering)
-            setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture prefab", paintKit);
-            setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture seed", (float)seed);
-            setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture wear", wear);
-
-            setAttrByName.Invoke(item.AttributeList.Handle, "set item texture prefab", paintKit);
-            setAttrByName.Invoke(item.AttributeList.Handle, "set item texture seed", (float)seed);
-            setAttrByName.Invoke(item.AttributeList.Handle, "set item texture wear", wear);
-
-            item.Initialized = true;
-
-            // Force the CS2 engine to recognize the glove attribute changes
-            Utilities.SetStateChanged(pawn, "CCSPlayerPawn", "m_EconGloves");
-
-            // Bodygroup toggle forces material/texture refresh.
-            // This matches the Bot-Improver approach that is confirmed working:
-            // set to 0 immediately, toggle to 1 on next frame.
-            pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,0");
-            Server.NextFrame(() =>
+            // 3. After a short delay, set the new glove identity + skin.
+            //    The delay lets the engine finish tearing down the old model.
+            var delay = 0.08f;
+            Action apply = () =>
             {
-                if (pawn.IsValid)
-                    pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
-            });
+                try
+                {
+                    if (!player.IsValid || !pawn.IsValid) return;
+
+                    item.ItemDefinitionIndex = defIndex;
+                    AssignItemId(item);
+
+                    // Re-clear in case engine wrote defaults during teardown
+                    item.NetworkedDynamicAttributes.Attributes.RemoveAll();
+                    setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture prefab", paintKit);
+                    setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture seed", (float)seed);
+                    setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture wear", wear);
+
+                    item.AttributeList.Attributes.RemoveAll();
+                    setAttrByName.Invoke(item.AttributeList.Handle, "set item texture prefab", paintKit);
+                    setAttrByName.Invoke(item.AttributeList.Handle, "set item texture seed", (float)seed);
+                    setAttrByName.Invoke(item.AttributeList.Handle, "set item texture wear", wear);
+
+                    item.Initialized = true;
+
+                    // 4. Force the engine to pick up the new glove model + material
+                    player.ExecuteClientCommand("lastinv");
+                    pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,0");
+                    addTimer?.Invoke(0.05f, () =>
+                    {
+                        if (pawn.IsValid)
+                            pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
+                    });
+                }
+                catch { }
+            };
+
+            if (addTimer != null)
+                addTimer(delay, apply);
+            else
+                apply();
         }
         catch (Exception ex)
         {

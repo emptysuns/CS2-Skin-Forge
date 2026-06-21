@@ -138,14 +138,6 @@ jobs:
           mkdir -p release-files
           find artifacts -type f \( -name "*.exe" -o -name "*.msi" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.dmg" \) -not -name "*.sig" -exec cp {} release-files/ \;
 
-          # Create addons zip with the compiled CS2 plugin DLL
-          cd addons
-          zip -r ../release-files/addons.zip \
-            counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.dll \
-            counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.json \
-            counterstrikesharp/plugins/PlayerSkinMod/skins_en.json
-          cd ..
-
           echo "=== Files to release ==="
           ls -la release-files/
           echo "file_count=$(ls release-files/ | wc -l)" >> $GITHUB_OUTPUT
@@ -188,9 +180,10 @@ jobs:
             ## Installation
 
             1. Download and install the panel app for your platform
-            2. Download `addons.zip` and extract to your CS2 `game/csgo/` directory
-            3. Add `-insecure` to CS2 launch options
-            4. Launch the panel, set your CS2 path in Settings, and customize!
+            2. Launch the panel, set your CS2 path in Settings
+            3. Click "Deploy Addons" to install the plugin to your CS2 directory
+            4. Add `-insecure` to CS2 launch options
+            5. Customize your loadout and click "Apply Loadout"!
 
             See [README](https://github.com/${{ github.repository }}/blob/main/README.md) for detailed instructions.
 
@@ -199,9 +192,10 @@ jobs:
             # 中文说明
 
             1. 下载并安装适合您平台的面板应用
-            2. 下载 `addons.zip` 并解压到 CS2 的 `game/csgo/` 目录
-            3. 在 CS2 启动选项中添加 `-insecure`
-            4. 启动面板，在设置中设置 CS2 路径，然后开始自定义！
+            2. 启动面板，在设置中设置 CS2 路径
+            3. 点击"部署插件"将插件安装到 CS2 目录
+            4. 在 CS2 启动选项中添加 `-insecure`
+            5. 自定义你的装备，点击"应用装备"即可!
 
             详细说明请查看 [中文文档](https://github.com/${{ github.repository }}/blob/main/README_CN.md)。
           draft: false

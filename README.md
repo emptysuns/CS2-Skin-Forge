@@ -2,9 +2,9 @@
 
 A local-only skin customization plugin for Counter-Strike 2 that allows players to customize weapon skins, knives, gloves, agent models, and music kits.
 
-**[中文文档 / Chinese Documentation](README_CN.md)**
+**[Chinese Documentation](README_CN.md)**
 
-## ⚠️ VAC Risk Warning
+## VAC Risk Warning
 
 **IMPORTANT: This plugin modifies CS2 game files and requires the `-insecure` launch option.**
 
@@ -19,18 +19,18 @@ While this plugin:
 
 ## Features
 
-- 🔫 **Weapon Skins**: Customize skins for 30+ weapons
-- 🔪 **Knives**: Choose from 20 knife types with 28 skin options
-- 🧤 **Gloves**: 8 glove types with multiple skin variants, per-team configuration (CT/T separate gloves), localized names (EN/ZH/JA/KO)
-- 👤 **Agent Models**: 35 CT + 44 T agent models (localized names: EN/ZH/JA/KO)
-- 🎵 **Music Kits**: 18+ music kits with localized names
-- 🔑 **Keychains/Charms**: Attach weapon charms with custom position and seed
-- 🏷️ **Nametags**: Set custom weapon names via nametags
-- 📊 **StatTrak™**: Enable StatTrak kill counters with custom kill counts
-- 🎲 **Random Mode**: Randomize all skins on each spawn
-- 🎨 **Custom Mode**: Mix and match specific skins
-- 🖥️ **Desktop Panel**: Native Tauri application for easy customization
-- 🌐 **Multi-language**: English, 简体中文, 繁體中文, 日本語, 한국어
+- **Weapon Skins**: Customize skins for 30+ weapons
+- **Knives**: Choose from 20 knife types with multiple skin options
+- **Gloves**: 8 glove types with multiple skin variants, per-team configuration (CT/T separate gloves), localized names
+- **Agent Models**: 35 CT + 44 T agent models (localized names: EN/ZH/JA/KO)
+- **Music Kits**: 18+ music kits with localized names
+- **Keychains/Charms**: Attach weapon charms with custom position and seed
+- **Nametags**: Set custom weapon names via nametags
+- **StatTrak**: Enable StatTrak kill counters with custom kill counts
+- **Random Mode**: Randomize all skins on each spawn
+- **Custom Mode**: Mix and match specific skins
+- **Desktop Panel**: Native Tauri application for easy customization
+- **Multi-language**: English, Simplified Chinese, Traditional Chinese, Japanese, Korean
 
 ## Installation
 
@@ -39,19 +39,21 @@ While this plugin:
 1. Counter-Strike 2 installed
 2. CounterStrikeSharp installed on your CS2 server/client
 
-### Step 1: Download
+### Step 1: Download and install the panel
 
 Download the latest release for your platform:
-- Windows: `CS2.Skin.Mod_x.x.x_x64-setup.exe`
+- Windows: `CS2-Skin-Mod_x.x.x_x64-setup.exe`
 - Linux: `cs2-skin-mod-panel_x.x.x_amd64.AppImage`
-- macOS: `CS2 Skin Mod.app.tar.gz`
+- macOS: `CS2-Skin-Mod_x.x.x_aarch64.dmg`
 
-### Step 2: Install Plugin Files
+Install and launch the application.
 
-Copy the `addons` folder from the release to your CS2 game directory:
-```
-<CS2 Install Path>/game/csgo/addons/
-```
+### Step 2: Deploy addons
+
+1. Launch the CS2 Skin Mod Panel
+2. Go to **Settings** (gear icon in top-right)
+3. Set your CS2 path (e.g. `C:\Program Files (x86)\Steam\steamapps\common\Counter-Strike Global Offensive\game\csgo`)
+4. Click **"Deploy Addons"** -- this copies the plugin files to your CS2 directory automatically
 
 ### Step 3: Configure CS2 Launch Options
 
@@ -60,36 +62,26 @@ Copy the `addons` folder from the release to your CS2 game directory:
 3. Select "Properties"
 4. In "Launch Options", add: `-insecure`
 
-**⚠️ Warning: This will prevent you from playing on VAC-secured servers.**
+**Warning: This will prevent you from playing on VAC-secured servers.**
 
-### Step 4: Run the Panel
+### Step 4: Customize and play
 
-Launch the CS2 Skin Mod Panel application.
+1. Customize your loadout in the panel
+2. Click **"Apply Loadout"** to save
+3. Launch CS2 with `-insecure` and start a local match
+4. Respawn in-game to see your skins
 
 ## Usage
 
 ### Quick Start
 
 1. Launch the CS2 Skin Mod Panel
-2. Go to **Settings** (⚙️ icon in top-right) and set your CS2 path (e.g., `C:\Program Files (x86)\Steam\steamapps\common\Counter-Strike Global Offensive\game\csgo`)
-3. Customize your loadout in the panel
-4. Click **"Apply Loadout"** to save
-5. Launch CS2 with `-insecure` and start a local match
-6. Respawn in-game to see your skins!
-
-### Starting a Local Match
-
-1. Launch CS2 with `-insecure` option
-2. Start a local match (Offline with Bots or Workshop map)
-3. Open the CS2 Skin Mod Panel
-4. Customize your loadout:
-   - **Weapons**: Select weapons and choose skins
-   - **Knives**: Choose knife type and skin
-   - **Gloves**: Select glove type and skin
-   - **Agents**: Pick CT or T agent model
-   - **Music**: Choose your MVP music kit
-5. Click "Apply Loadout"
-6. Respawn in-game to see changes
+2. Go to **Settings** and set your CS2 path
+3. Click **"Deploy Addons"** to install the plugin
+4. Customize your loadout in the panel
+5. Click **"Apply Loadout"** to save
+6. Launch CS2 with `-insecure` and start a local match
+7. Respawn in-game to see your skins
 
 ### In-Game Commands
 
@@ -99,16 +91,9 @@ Launch the CS2 Skin Mod Panel application.
 | `skin_random` | Enable random skin mode |
 | `skin_reset` | Reset all skins to default |
 
-## 🤖 Enhanced Bot Experience (Recommended)
+### Enhanced Bot Experience (Recommended)
 
-For the best experience with bot matches, we highly recommend using **[CS2-Bot-Improver](https://github.com/ed0ard/CS2-Bot-Improver)** alongside this plugin.
-
-CS2-Bot-Improver enhances bot behavior in CS2, making them:
-- More intelligent and challenging opponents
-- Better at using weapons and tactical positioning
-- More realistic overall gameplay experience
-
-Install CS2-Bot-Improver to your CS2 server's CounterStrikeSharp plugins directory, then use this Skin Mod Panel to customize your loadout for an enhanced local gaming experience.
+For the best experience with bot matches, we recommend using [CS2-Bot-Improver](https://github.com/ed0ard/CS2-Bot-Improver) alongside this plugin. Install it to your CS2 server's CounterStrikeSharp plugins directory for smarter, more challenging bots.
 
 ### How It Works
 
@@ -119,20 +104,21 @@ The panel and addon communicate via a JSON file (`player_loadout.json`):
 
 The plugin uses CounterStrikeSharp to hook into CS2's weapon system:
 - Intercepts `GiveNamedItem` calls to apply skins when weapons are given
+- Intercepts `OnEntitySpawned` to catch weapons that bypass the GiveNamedItem hook
 - Modifies `FallbackPaintKit`, `FallbackSeed`, and `FallbackWear` attributes
 - Changes knife models via `ChangeSubclass` input
-- Replaces agent models on player spawn
+- Replaces agent models and gloves on player spawn
 
 All changes are **client-side only** and do not affect other players or the server.
 
 ### Language Support
 
-The panel supports multiple languages. Click the ⚙️ Settings icon to change between:
-- 🇺🇸 English
-- 🇨🇳 简体中文
-- 🇹🇼 繁體中文
-- 🇯🇵 日本語
-- 🇰🇷 한국어
+The panel supports multiple languages. Click the Settings icon to change between:
+- English
+- Simplified Chinese
+- Traditional Chinese
+- Japanese
+- Korean
 
 ## Building from Source
 
@@ -146,8 +132,8 @@ The panel supports multiple languages. Click the ⚙️ Settings icon to change 
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/CS2-Skin-local-mod.git
-cd CS2-Skin-local-mod
+git clone https://github.com/emptysuns/CS2-Skin-Forge.git
+cd CS2-Skin-Forge
 
 # Install frontend dependencies
 cd Panel
@@ -164,12 +150,13 @@ npm run tauri build
 1. Verify `-insecure` is in launch options
 2. Ensure CounterStrikeSharp is installed
 3. Make sure you set the correct CS2 path in Settings
-4. Respawn after applying changes
-5. Check server console for errors
+4. Click "Deploy Addons" to ensure the plugin is installed
+5. Respawn after applying changes
+6. Check server console for errors
 
 ### Glove textures misaligned or broken
 
-This is usually caused by a mismatch between the glove type (DefIndex) and the paint kit. Each glove type (Bloodhound, Sport, Driver, etc.) uses a different 3D model with its own UV layout — applying a paint kit intended for one glove type to another will produce distorted textures.
+This is usually caused by a mismatch between the glove type (DefIndex) and the paint kit. Each glove type (Bloodhound, Sport, Driver, etc.) uses a different 3D model with its own UV layout -- applying a paint kit intended for one glove type to another will produce distorted textures.
 
 **Fix:** When you switch glove types in the panel, the paint is automatically reset to a valid default for that glove type. If you still see issues:
 1. Select your desired glove type first
@@ -192,29 +179,37 @@ This is usually caused by a mismatch between the glove type (DefIndex) and the p
 ## File Structure
 
 ```
-CS2-Skin-local-mod/
+CS2-Skin-Forge/
 ├── addons/
 │   └── counterstrikesharp/
 │       └── plugins/
 │           └── PlayerSkinMod/
-│               ├── PlayerSkinMod.cs      # Main plugin
-│               ├── PlayerSkinMod.csproj  # C# project
-│               ├── skins_en.json         # Skin data
-│               └── player_loadout.json   # Loadout (generated by panel)
+│               ├── PlayerSkinModPlugin.cs  # Main plugin
+│               ├── PlayerSkinMod.csproj    # C# project
+│               ├── Services/
+│               │   ├── WeaponService.cs    # Skin/glove/knife application
+│               │   └── LoadoutService.cs   # Loadout file parsing
+│               ├── Data/
+│               │   └── StaticData.cs       # Static skin/knife/glove data
+│               ├── Models/
+│               │   └── PlayerLoadout.cs    # Loadout data model
+│               ├── skins_en.json           # Skin data (EN names + legacy flags)
+│               └── player_loadout.json     # Loadout (generated by panel)
 ├── Panel/
-│   ├── src/                              # React frontend (with i18n)
-│   ├── src-tauri/                        # Tauri backend
+│   ├── src/                                # React frontend (with i18n)
+│   ├── src-tauri/                          # Tauri backend
 │   └── package.json
 ├── .github/
 │   └── workflows/
-│       └── build.yml                     # CI/CD config
-├── README.md                             # This file
-└── README_CN.md                          # Chinese documentation
+│       └── build.yml                       # CI/CD config
+├── README.md                               # This file
+└── README_CN.md                            # Chinese documentation
 ```
 
 ## Credits
 
 - Based on [CS2-Bot-Improver](https://github.com/ed0ard/CS2-Bot-Improver) by ed0ard
+- Glove skin application references [Nereziel/cs2-WeaponPaints](https://github.com/Nereziel/cs2-WeaponPaints)
 - Uses [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp)
 - Built with [Tauri](https://tauri.app/) + [React](https://react.dev/)
 
