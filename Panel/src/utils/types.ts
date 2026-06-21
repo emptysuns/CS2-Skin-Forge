@@ -43,10 +43,12 @@ export interface Loadout {
   glovePaintCt: number;
   gloveWearCt: number;
   gloveSeedCt: number;
+  gloveDefIndexCt: number;
   gloveIndexT: number;
   glovePaintT: number;
   gloveWearT: number;
   gloveSeedT: number;
+  gloveDefIndexT: number;
   agentModelCt: number;
   agentModelT: number;
   agentModelPathCt: string;

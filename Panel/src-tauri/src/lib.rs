@@ -75,6 +75,8 @@ pub struct Loadout {
     pub glove_wear_ct: f32,
     #[serde(rename = "gloveSeedCt", default)]
     pub glove_seed_ct: i32,
+    #[serde(rename = "gloveDefIndexCt", default)]
+    pub glove_defindex_ct: u16,
     #[serde(rename = "gloveIndexT", default = "default_glove")]
     pub glove_index_t: i32,
     #[serde(rename = "glovePaintT", default = "default_glove")]
@@ -83,6 +85,8 @@ pub struct Loadout {
     pub glove_wear_t: f32,
     #[serde(rename = "gloveSeedT", default)]
     pub glove_seed_t: i32,
+    #[serde(rename = "gloveDefIndexT", default)]
+    pub glove_defindex_t: u16,
     #[serde(rename = "agentModelCt", default = "default_agent")]
     pub agent_model_ct: i32,
     #[serde(rename = "agentModelT", default = "default_agent")]

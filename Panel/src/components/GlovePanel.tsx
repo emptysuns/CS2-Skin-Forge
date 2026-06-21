@@ -34,6 +34,9 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
     updateLoadout({
       [getIndexField()]: index,
       [getPaintField()]: currentPaint >= 0 ? currentPaint : glove.paints[0].id,
+      ...(selectedTeam === 'ct'
+        ? { gloveDefIndexCt: glove.defindex }
+        : { gloveDefIndexT: glove.defindex }),
       useRandom: false,
     } as any);
   };

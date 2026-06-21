@@ -66,6 +66,8 @@ public static class LoadoutService
                     loadout.GloveWearCt = (float)gloveWearCtEl.GetDouble();
                 if (loadoutEl.TryGetProperty("gloveSeedCt", out var gloveSeedCtEl))
                     loadout.GloveSeedCt = gloveSeedCtEl.GetInt32();
+                if (loadoutEl.TryGetProperty("gloveDefIndexCt", out var gloveDefIdxCtEl) && gloveDefIdxCtEl.GetUInt16() > 0)
+                    loadout.GloveDefIndexCt = gloveDefIdxCtEl.GetUInt16();
 
                 if (loadoutEl.TryGetProperty("gloveIndexT", out var gloveIdxTEl) && gloveIdxTEl.GetInt32() >= 0)
                     loadout.GloveIndexT = gloveIdxTEl.GetInt32();
@@ -75,6 +77,8 @@ public static class LoadoutService
                     loadout.GloveWearT = (float)gloveWearTEl.GetDouble();
                 if (loadoutEl.TryGetProperty("gloveSeedT", out var gloveSeedTEl))
                     loadout.GloveSeedT = gloveSeedTEl.GetInt32();
+                if (loadoutEl.TryGetProperty("gloveDefIndexT", out var gloveDefIdxTEl) && gloveDefIdxTEl.GetUInt16() > 0)
+                    loadout.GloveDefIndexT = gloveDefIdxTEl.GetUInt16();
 
                 // Backward compat: old single glove fields → use for both teams
                 if (loadout.GloveIndexCt < 0 && loadout.GloveIndexT < 0)

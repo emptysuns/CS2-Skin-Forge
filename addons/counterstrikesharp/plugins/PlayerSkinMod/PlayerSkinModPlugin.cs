@@ -19,7 +19,7 @@ namespace PlayerSkinMod;
 public class PlayerSkinModPlugin : BasePlugin
 {
     public override string ModuleName        => "PlayerSkinMod";
-    public override string ModuleVersion     => "1.4.3";
+    public override string ModuleVersion     => "1.4.4";
     public override string ModuleAuthor      => "CS2-Skin-local-mod";
     public override string ModuleDescription => "Allow players to customize weapon skins, knives, gloves, agent models, music kits locally";
 
@@ -247,25 +247,38 @@ public class PlayerSkinModPlugin : BasePlugin
         int knifePaint = loadout.KnifePaint >= 0 ? loadout.KnifePaint : StaticData.KnifePaints[_rng.Next(StaticData.KnifePaints.Length)];
 
         // Use per-team glove configuration
-        int gloveIdx, glovePaint;
         ushort gloveDefIndex;
+        int glovePaint;
         int gloveSeed;
         float gloveWear;
         if (isCT)
         {
-            gloveIdx = loadout.GloveIndexCt >= 0 ? Math.Min(loadout.GloveIndexCt, StaticData.Gloves.Length - 1) : _rng.Next(StaticData.Gloves.Length);
-            var gloveCt = StaticData.Gloves[gloveIdx];
-            gloveDefIndex = gloveCt.DefIndex;
-            glovePaint = loadout.GlovePaintCt >= 0 ? loadout.GlovePaintCt : gloveCt.PaintKit;
+            // Prefer direct DefIndex from panel (v1.4.4+), fallback to StaticData index lookup
+            if (loadout.GloveDefIndexCt > 0)
+            {
+                gloveDefIndex = loadout.GloveDefIndexCt;
+            }
+            else
+            {
+                int gloveIdx = loadout.GloveIndexCt >= 0 ? Math.Min(loadout.GloveIndexCt, StaticData.Gloves.Length - 1) : _rng.Next(StaticData.Gloves.Length);
+                gloveDefIndex = StaticData.Gloves[gloveIdx].DefIndex;
+            }
+            glovePaint = loadout.GlovePaintCt >= 0 ? loadout.GlovePaintCt : StaticData.Gloves[0].PaintKit;
             gloveSeed = loadout.GloveSeedCt;
             gloveWear = loadout.GloveWearCt;
         }
         else
         {
-            gloveIdx = loadout.GloveIndexT >= 0 ? Math.Min(loadout.GloveIndexT, StaticData.Gloves.Length - 1) : _rng.Next(StaticData.Gloves.Length);
-            var gloveT = StaticData.Gloves[gloveIdx];
-            gloveDefIndex = gloveT.DefIndex;
-            glovePaint = loadout.GlovePaintT >= 0 ? loadout.GlovePaintT : gloveT.PaintKit;
+            if (loadout.GloveDefIndexT > 0)
+            {
+                gloveDefIndex = loadout.GloveDefIndexT;
+            }
+            else
+            {
+                int gloveIdx = loadout.GloveIndexT >= 0 ? Math.Min(loadout.GloveIndexT, StaticData.Gloves.Length - 1) : _rng.Next(StaticData.Gloves.Length);
+                gloveDefIndex = StaticData.Gloves[gloveIdx].DefIndex;
+            }
+            glovePaint = loadout.GlovePaintT >= 0 ? loadout.GlovePaintT : StaticData.Gloves[0].PaintKit;
             gloveSeed = loadout.GloveSeedT;
             gloveWear = loadout.GloveWearT;
         }

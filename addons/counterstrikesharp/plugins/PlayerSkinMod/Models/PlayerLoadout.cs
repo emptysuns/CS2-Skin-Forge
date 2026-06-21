@@ -11,10 +11,12 @@ public class PlayerLoadout
     public int GlovePaintCt { get; set; } = -1;
     public float GloveWearCt { get; set; } = 0.01f;
     public int GloveSeedCt { get; set; } = 0;
+    public ushort GloveDefIndexCt { get; set; } = 0;
     public int GloveIndexT { get; set; } = -1;
     public int GlovePaintT { get; set; } = -1;
     public float GloveWearT { get; set; } = 0.01f;
     public int GloveSeedT { get; set; } = 0;
+    public ushort GloveDefIndexT { get; set; } = 0;
     public int AgentModelCt { get; set; } = -1;
     public int AgentModelT { get; set; } = -1;
     public string AgentModelPathCt { get; set; } = "";
