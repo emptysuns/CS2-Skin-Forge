@@ -198,9 +198,13 @@ public static class WeaponService
 
     /// <summary>
     /// Apply gloves to a player pawn.  Follows the Nereziel/cs2-WeaponPaints
-    /// pattern: clear stale attributes, issue a "lastinv" to force the engine
-    /// to release the current glove model, then after a short delay set the
-    /// new identity + skin and force a final model/material refresh.
+    /// pattern exactly (see WeaponAction.cs GivePlayerGloves):
+    ///   1. Clear stale attributes
+    ///   2. lastinv (force engine to release old glove model)
+    ///   3. 0.08f delay
+    ///   4. Set defindex + skin attributes
+    ///   5. lastinv again (force engine to pick up new model)
+    ///   6. Bodygroup toggle 0 -> 1 (with 0.2f delay)
     /// </summary>
     public static void ApplyGloves(
         CCSPlayerController player,
@@ -220,11 +224,10 @@ public static class WeaponService
             item.NetworkedDynamicAttributes.Attributes.RemoveAll();
             item.AttributeList.Attributes.RemoveAll();
 
-            // 2. Schedule the actual glove application after a short delay,
-            //    matching the Nereziel/cs2-WeaponPaints pattern exactly.
-            //    "lastinv" is called INSIDE the timer (not before) so it only
-            //    fires once, avoiding a double-toggle that cancels the refresh.
-            var delay = 0.08f;
+            // 2. Force engine to release old glove model (Nereziel pattern)
+            player.ExecuteClientCommand("lastinv");
+
+            // 3. After 0.08f, set the new glove identity + skin + force refresh
             Action apply = () =>
             {
                 try
@@ -250,7 +253,7 @@ public static class WeaponService
                     // Force glove model + material refresh (Nereziel pattern)
                     player.ExecuteClientCommand("lastinv");
                     pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,0");
-                    addTimer?.Invoke(0.05f, () =>
+                    addTimer?.Invoke(0.2f, () =>
                     {
                         if (pawn.IsValid)
                             pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
@@ -260,7 +263,7 @@ public static class WeaponService
             };
 
             if (addTimer != null)
-                addTimer(delay, apply);
+                addTimer(0.08f, apply);
             else
                 apply();
         }
