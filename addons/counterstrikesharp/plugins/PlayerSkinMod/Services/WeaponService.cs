@@ -221,7 +221,7 @@ public static class WeaponService
             var item = pawn.EconGloves;
             if (item == null)
             {
-                Server.PrintToConsole(player, $"[PlayerSkinMod] EconGloves is null for {player.PlayerName}");
+                player.PrintToConsole($"[PlayerSkinMod] EconGloves is null for {player.PlayerName}");
                 return;
             }
 
@@ -270,7 +270,7 @@ public static class WeaponService
         }
         catch (Exception ex)
         {
-            Server.PrintToConsole(player, $"[PlayerSkinMod] ApplyGloves error: {ex.Message}");
+            player.PrintToConsole($"[PlayerSkinMod] ApplyGloves error: {ex.Message}");
         }
     }
 
