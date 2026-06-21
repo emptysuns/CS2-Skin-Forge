@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Loadout } from '../utils/types';
 import { gloves, getGloveTypeImage } from '../data/skins';
+import { getGloveLocalizedName, getGlovePaintLocalizedName } from '../data/localNames';
 import { useT } from '../i18n';
 
 interface GlovePanelProps {
@@ -9,7 +10,7 @@ interface GlovePanelProps {
 }
 
 export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const [selectedTeam, setSelectedTeam] = useState<'ct' | 't'>('ct');
   const [selectedGlove, setSelectedGlove] = useState<number | null>(() => {
     const idx = selectedTeam === 'ct' ? loadout.gloveIndexCt : loadout.gloveIndexT;
@@ -31,9 +32,14 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
   const handleGloveSelect = (index: number) => {
     setSelectedGlove(index);
     const glove = gloves[index];
+    // Validate: if current paint is not valid for this glove type, reset to first valid paint
+    const validPaintIds = glove.paints.map(p => p.id);
+    const isPaintValid = validPaintIds.includes(currentPaint);
+    const newPaint = isPaintValid ? currentPaint : glove.paints[0].id;
+
     updateLoadout({
       [getIndexField()]: index,
-      [getPaintField()]: currentPaint >= 0 ? currentPaint : glove.paints[0].id,
+      [getPaintField()]: newPaint,
       ...(selectedTeam === 'ct'
         ? { gloveDefIndexCt: glove.defindex }
         : { gloveDefIndexT: glove.defindex }),
@@ -62,10 +68,10 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
     });
   };
 
-  // Find glove names for both teams
+  // Find glove names for both teams (localized)
   const getGloveName = (idx: number) => {
     if (idx < 0 || idx >= gloves.length) return t("preview.random");
-    return gloves[idx].name;
+    return getGloveLocalizedName(gloves[idx].defindex, gloves[idx].name, lang);
   };
 
   const selectedCtName = getGloveName(loadout.gloveIndexCt);
@@ -146,7 +152,9 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
               <div>
-                <div className="text-xs font-semibold text-white">{glove.name}</div>
+                <div className="text-xs font-semibold text-white">
+                  {getGloveLocalizedName(glove.defindex, glove.name, lang)}
+                </div>
                 <div className="text-xs text-gray-400">{glove.paints.length} {t("tab.gloves").toLowerCase()}</div>
               </div>
             </div>
@@ -157,7 +165,7 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
       {selectedGlove !== null && (
         <div className="card">
           <h3 className="text-sm font-semibold text-white mb-3">
-            {gloves[selectedGlove].name} - {t("glove.selectPaint")}
+            {getGloveLocalizedName(gloves[selectedGlove].defindex, gloves[selectedGlove].name, lang)} - {t("glove.selectPaint")}
           </h3>
 
           {/* Wear + Seed controls */}
@@ -230,7 +238,9 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
                     className="w-full h-12 object-contain mb-1"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 )}
-                <span className="truncate w-full text-center">{paint.name}</span>
+                <span className="truncate w-full text-center">
+                  {getGlovePaintLocalizedName(gloves[selectedGlove].defindex, paint.id, paint.name, lang)}
+                </span>
               </button>
             ))}
           </div>

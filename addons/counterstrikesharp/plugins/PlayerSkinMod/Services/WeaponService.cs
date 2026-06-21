@@ -211,11 +211,11 @@ public static class WeaponService
         {
             var item = pawn.EconGloves;
 
-            // Clear existing attributes
+            // Clear stale attributes from previous glove type
             item.NetworkedDynamicAttributes.Attributes.RemoveAll();
             item.AttributeList.Attributes.RemoveAll();
 
-            // Set glove identity
+            // Set glove identity — this drives which 3D model + UV layout is used
             item.ItemDefinitionIndex = defIndex;
             AssignItemId(item);
 
@@ -230,42 +230,18 @@ public static class WeaponService
 
             item.Initialized = true;
 
-            // Force CS2 engine to recognize glove attribute changes
-            // This is critical — without SetStateChanged, the engine may not re-render the glove
+            // Force the CS2 engine to recognize the glove attribute changes
             Utilities.SetStateChanged(pawn, "CCSPlayerPawn", "m_EconGloves");
 
-            // Bodygroup toggle to force material/texture refresh (NO lastinv — causes conflicts)
-            // Multiple passes at increasing delays to handle race conditions
+            // Bodygroup toggle forces material/texture refresh.
+            // This matches the Bot-Improver approach that is confirmed working:
+            // set to 0 immediately, toggle to 1 on next frame.
             pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,0");
             Server.NextFrame(() =>
             {
                 if (pawn.IsValid)
                     pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
             });
-
-            if (addTimer != null)
-            {
-                addTimer(0.15f, () =>
-                {
-                    if (pawn.IsValid)
-                    {
-                        pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,0");
-                    }
-                });
-                addTimer(0.30f, () =>
-                {
-                    if (pawn.IsValid)
-                    {
-                        pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
-                        // Re-apply attributes in case engine overwrote them during refresh
-                        var gloveItem = pawn.EconGloves;
-                        if (gloveItem.ItemDefinitionIndex == defIndex)
-                        {
-                            Utilities.SetStateChanged(pawn, "CCSPlayerPawn", "m_EconGloves");
-                        }
-                    }
-                });
-            }
         }
         catch (Exception ex)
         {

@@ -259,6 +259,90 @@ export const musicKitNameMap: Record<string, { en: string; zh: string }> = {
   'music_kit-103_st': { en: "StatTrak™ Music Kit | ShockOne, Voices", zh: "StatTrak™ 音乐盒 | ShockOne, 声流" },
 };
 
+export const gloveNameMap: Record<number, { name: string; paints: Record<number, string> }> = {
+  5027: {
+    name: "Bloodhound Gloves",
+    paints: {
+      10006: "Charred", 10007: "Snakebite", 10008: "Bronzed", 10039: "Guerrilla",
+    },
+  },
+  5030: {
+    name: "Sport Gloves",
+    paints: {
+      1405: "Amphibious", 1406: "Bronze Morph", 1407: "Vice", 1408: "Omega",
+      1409: "Slingshot", 1410: "Superconductor", 1417: "Nocts",
+      10018: "Pandora's Box", 10019: "Hedge Maze", 10037: "Superconductor",
+      10038: "Crimson Kimono", 10045: "Amphibious", 10046: "Bronze Morph",
+      10047: "Vice", 10048: "Omega", 10073: "Slingshot", 10074: "Big Game",
+      10075: "Scarlet Shamagh", 10076: "Nocts",
+    },
+  },
+  5031: {
+    name: "Driver Gloves",
+    paints: {
+      1398: "Imperial Plaid", 1399: "Overtake", 1400: "Racing Green",
+      1401: "King Snake", 1402: "Crimson Weave", 1404: "Diamondback",
+      1412: "Convoy", 1439: "Rezan the Red",
+      10013: "Lunar Weave", 10015: "Convoy", 10016: "Crimson Weave",
+      10040: "Diamondback", 10041: "King Snake", 10042: "Imperial Plaid",
+      10043: "Overtake", 10044: "Racing Green", 10069: "Rezan the Red",
+      10070: "Snow Leopard", 10071: "Queen Jaguar", 10072: "Black Tie",
+    },
+  },
+  5032: {
+    name: "Hand Wraps",
+    paints: {
+      10009: "Leather", 10010: "Spruce DDPAT", 10021: "Slaughter",
+      10036: "Badlands", 10053: "Cobalt Skulls", 10054: "Overprint",
+      10055: "Duct Tape", 10056: "Arboreal", 10081: "Desert Shamagh",
+      10082: "Giraffe", 10083: "Constrictor", 10084: "CAUTION!",
+    },
+  },
+  5033: {
+    name: "Moto Gloves",
+    paints: {
+      10024: "Eclipse", 10026: "Spearmint", 10027: "Boom!",
+      10028: "Cool Mint", 10049: "Polygon", 10050: "Turtle",
+      10051: "Transport", 10052: "POW!", 10077: "Finish Line",
+      10078: "Smoke Out", 10079: "Blood Pressure", 10080: "3rd Commando Company",
+    },
+  },
+  5034: {
+    name: "Specialist Gloves",
+    paints: {
+      1413: "Crimson Kimono", 1414: "Emerald Web", 1415: "Foundation",
+      1416: "Forest DDPAT", 1437: "Fade", 1438: "Crimson Web",
+      1440: "Buckshot",
+      10030: "Forest DDPAT", 10033: "Crimson Kimono", 10034: "Emerald Web",
+      10035: "Foundation", 10061: "Crimson Web", 10062: "Mogul",
+      10063: "Marble Fade", 10064: "Fade", 10065: "Crimson Kimono",
+      10066: "Lt. Commander", 10067: "Tiger Strike", 10068: "Field Agent",
+    },
+  },
+  5035: {
+    name: "Hydra Gloves",
+    paints: {
+      10057: "Emerald", 10058: "Mangrove", 10059: "Rattler", 10060: "Case Hardened",
+    },
+  },
+  4725: {
+    name: "Broken Fang Gloves",
+    paints: {
+      10085: "Jade", 10086: "Yellow-banded", 10087: "Needle Point", 10088: "Unhinged",
+    },
+  },
+};
+
+export function getGloveLocalizedName(defindex: number, zhName: string, lang: string): string {
+  if (lang === 'schinese' || lang === 'tchinese') return zhName;
+  return gloveNameMap[defindex]?.name ?? zhName;
+}
+
+export function getGlovePaintLocalizedName(defindex: number, paintId: number, zhName: string, lang: string): string {
+  if (lang === 'schinese' || lang === 'tchinese') return zhName;
+  return gloveNameMap[defindex]?.paints[paintId] ?? zhName;
+}
+
 export function getLocalizedName(
   id: string,
   nameMap: Record<string, { en: string; zh: string }>,

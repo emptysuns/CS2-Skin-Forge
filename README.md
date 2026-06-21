@@ -21,7 +21,7 @@ While this plugin:
 
 - 🔫 **Weapon Skins**: Customize skins for 30+ weapons
 - 🔪 **Knives**: Choose from 20 knife types with 28 skin options
-- 🧤 **Gloves**: 8 glove types with multiple skin variants, per-team configuration (CT/T separate gloves)
+- 🧤 **Gloves**: 8 glove types with multiple skin variants, per-team configuration (CT/T separate gloves), localized names (EN/ZH/JA/KO)
 - 👤 **Agent Models**: 35 CT + 44 T agent models (localized names: EN/ZH/JA/KO)
 - 🎵 **Music Kits**: 18+ music kits with localized names
 - 🔑 **Keychains/Charms**: Attach weapon charms with custom position and seed
@@ -166,6 +166,16 @@ npm run tauri build
 3. Make sure you set the correct CS2 path in Settings
 4. Respawn after applying changes
 5. Check server console for errors
+
+### Glove textures misaligned or broken
+
+This is usually caused by a mismatch between the glove type (DefIndex) and the paint kit. Each glove type (Bloodhound, Sport, Driver, etc.) uses a different 3D model with its own UV layout — applying a paint kit intended for one glove type to another will produce distorted textures.
+
+**Fix:** When you switch glove types in the panel, the paint is automatically reset to a valid default for that glove type. If you still see issues:
+1. Select your desired glove type first
+2. Then pick a paint from the list (the panel only shows valid paints for that type)
+3. Click "Apply Loadout" and respawn in-game
+4. If textures are still broken, set the glove to "Random Mode", apply, respawn, then re-select your desired glove
 
 ### Panel not saving loadout
 
