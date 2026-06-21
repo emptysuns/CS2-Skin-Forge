@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Loadout } from '../utils/types';
 import { agentModels } from '../data/skins';
+import { getLocalizedName, agentNameMap } from '../data/localNames';
 import { useT } from '../i18n';
 
 interface AgentPanelProps {
@@ -9,7 +10,7 @@ interface AgentPanelProps {
 }
 
 export default function AgentPanel({ loadout, updateLoadout }: AgentPanelProps) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const [selectedTeam, setSelectedTeam] = useState<'ct' | 't'>('ct');
 
   const handleAgentSelect = (modelId: string) => {
@@ -31,11 +32,17 @@ export default function AgentPanel({ loadout, updateLoadout }: AgentPanelProps) 
   const isBothRandom = loadout.agentModelCt === -1 && loadout.agentModelT === -1;
 
   // Find selected agent names for display
-  const selectedCtName = loadout.agentModelCt >= 0
-    ? agentModels.ct[Math.min(loadout.agentModelCt, agentModels.ct.length - 1)]?.name ?? '—'
+  const selectedCtIdx = loadout.agentModelCt >= 0
+    ? Math.min(loadout.agentModelCt, agentModels.ct.length - 1)
+    : -1;
+  const selectedCtName = selectedCtIdx >= 0
+    ? getLocalizedName('agent-' + agentModels.ct[selectedCtIdx].id, agentNameMap, lang, agentModels.ct[selectedCtIdx].name)
     : t("preview.random");
-  const selectedTName = loadout.agentModelT >= 0
-    ? agentModels.t[Math.min(loadout.agentModelT, agentModels.t.length - 1)]?.name ?? '—'
+  const selectedTIdx = loadout.agentModelT >= 0
+    ? Math.min(loadout.agentModelT, agentModels.t.length - 1)
+    : -1;
+  const selectedTName = selectedTIdx >= 0
+    ? getLocalizedName('agent-' + agentModels.t[selectedTIdx].id, agentNameMap, lang, agentModels.t[selectedTIdx].name)
     : t("preview.random");
 
   return (
@@ -109,7 +116,7 @@ export default function AgentPanel({ loadout, updateLoadout }: AgentPanelProps) 
                 {model.name.charAt(0)}
               </div>
             )}
-            <div className="text-xs font-medium text-white truncate">{model.name}</div>
+            <div className="text-xs font-medium text-white truncate">{getLocalizedName('agent-' + model.id, agentNameMap, lang, model.name)}</div>
           </button>
         ))}
       </div>

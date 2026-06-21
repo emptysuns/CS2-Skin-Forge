@@ -1,5 +1,6 @@
 import { Loadout } from '../utils/types';
 import { musicKits } from '../data/skins';
+import { getLocalizedName, musicKitNameMap } from '../data/localNames';
 import { useT } from '../i18n';
 
 interface MusicKitPanelProps {
@@ -8,7 +9,7 @@ interface MusicKitPanelProps {
 }
 
 export default function MusicKitPanel({ loadout, updateLoadout }: MusicKitPanelProps) {
-  const { t } = useT();
+  const { t, lang } = useT();
 
   const handleMusicKitSelect = (kitId: number) => {
     updateLoadout({ musicKit: kitId, useRandom: false });
@@ -57,7 +58,7 @@ export default function MusicKitPanel({ loadout, updateLoadout }: MusicKitPanelP
                   ♪
                 </div>
               )}
-              <div className="text-xs font-medium text-white truncate">{kit.name}</div>
+              <div className="text-xs font-medium text-white truncate">{getLocalizedName('music_kit-' + kit.id, musicKitNameMap, lang, kit.name)}</div>
             </div>
           </button>
         ))}

@@ -1,6 +1,7 @@
 import { Loadout } from '../utils/types';
 import { knives } from '../data/knives';
-import { gloves, musicKits } from '../data/skins';
+import { gloves, musicKits, agentModels } from '../data/skins';
+import { getLocalizedName, agentNameMap, musicKitNameMap } from '../data/localNames';
 import { useT } from '../i18n';
 
 interface PreviewPanelProps {
@@ -8,7 +9,7 @@ interface PreviewPanelProps {
 }
 
 export default function PreviewPanel({ loadout }: PreviewPanelProps) {
-  const { t } = useT();
+  const { t, lang } = useT();
 
   const getKnifeName = () => {
     if (loadout.knifeIndex === -1) return t("preview.notSelected");
@@ -22,7 +23,23 @@ export default function PreviewPanel({ loadout }: PreviewPanelProps) {
 
   const getMusicKitName = () => {
     if (loadout.musicKit === -1) return t("preview.notSelected");
-    return musicKits.find(k => k.id === loadout.musicKit)?.name || t("preview.notSelected");
+    const kit = musicKits.find(k => k.id === loadout.musicKit);
+    if (!kit) return t("preview.notSelected");
+    return getLocalizedName('music_kit-' + kit.id, musicKitNameMap, lang, kit.name);
+  };
+
+  const getAgentName = () => {
+    const ctIdx = loadout.agentModelCt;
+    const tIdx = loadout.agentModelT;
+    const names: string[] = [];
+    if (ctIdx >= 0 && ctIdx < agentModels.ct.length) {
+      names.push(getLocalizedName('agent-' + agentModels.ct[ctIdx].id, agentNameMap, lang, agentModels.ct[ctIdx].name));
+    }
+    if (tIdx >= 0 && tIdx < agentModels.t.length) {
+      names.push(getLocalizedName('agent-' + agentModels.t[tIdx].id, agentNameMap, lang, agentModels.t[tIdx].name));
+    }
+    if (names.length === 0) return t("preview.random");
+    return names.join(' / ');
   };
 
   const getCustomWeaponCount = () => Object.keys(loadout.weaponPaints).length;
@@ -45,6 +62,13 @@ export default function PreviewPanel({ loadout }: PreviewPanelProps) {
           <div>
             <div className="text-xs font-medium text-gray-400">{t("preview.gloves")}</div>
             <div className="text-xs text-white">{getGloveName()}</div>
+          </div>
+        </div>
+
+        <div className="flex items-start space-x-2">
+          <div>
+            <div className="text-xs font-medium text-gray-400">{t("agent.title")}</div>
+            <div className="text-xs text-white">{getAgentName()}</div>
           </div>
         </div>
 

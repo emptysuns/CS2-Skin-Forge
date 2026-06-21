@@ -171,30 +171,46 @@ public static class WeaponService
         {
             var item = pawn.EconGloves;
 
+            // Clear existing attributes first
             item.NetworkedDynamicAttributes.Attributes.RemoveAll();
             item.AttributeList.Attributes.RemoveAll();
 
-            item.ItemDefinitionIndex = defIndex;
-            AssignItemId(item);
-            item.AccountID = (uint)player.SteamID;
+            // Force glove model refresh before applying (prevents model overlap)
+            player.ExecuteClientCommand("lastinv");
 
-            setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture prefab", paintKit);
-            setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture seed", (float)seed);
-            setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture wear", wear);
-
-            setAttrByName.Invoke(item.AttributeList.Handle, "set item texture prefab", paintKit);
-            setAttrByName.Invoke(item.AttributeList.Handle, "set item texture seed", (float)seed);
-            setAttrByName.Invoke(item.AttributeList.Handle, "set item texture wear", wear);
-
-            item.Initialized = true;
-            Utilities.SetStateChanged(pawn, "CCSPlayerPawn", "m_EconGloves");
-
-            // Force a re-render of the glove model so the new mesh actually shows.
-            pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,0");
+            // Short delay to let client process the model change
             Server.NextFrame(() =>
             {
-                if (pawn.IsValid)
-                    pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
+                if (!player.IsValid || !pawn.IsValid) return;
+
+                item.ItemDefinitionIndex = defIndex;
+                AssignItemId(item);
+                item.AccountID = (uint)player.SteamID;
+
+                // Clear again after delay to ensure clean state
+                item.NetworkedDynamicAttributes.Attributes.RemoveAll();
+                item.AttributeList.Attributes.RemoveAll();
+
+                setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture prefab", paintKit);
+                setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture seed", (float)seed);
+                setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture wear", wear);
+
+                setAttrByName.Invoke(item.AttributeList.Handle, "set item texture prefab", paintKit);
+                setAttrByName.Invoke(item.AttributeList.Handle, "set item texture seed", (float)seed);
+                setAttrByName.Invoke(item.AttributeList.Handle, "set item texture wear", wear);
+
+                item.Initialized = true;
+                Utilities.SetStateChanged(pawn, "CCSPlayerPawn", "m_EconGloves");
+
+                // Force glove model refresh after applying (prevents model overlap)
+                player.ExecuteClientCommand("lastinv");
+                SetBodygroup(pawn, "first_or_third_person", 0);
+                // Show gloves again after short delay
+                Server.NextFrame(() =>
+                {
+                    if (pawn.IsValid)
+                        SetBodygroup(pawn, "first_or_third_person", 1);
+                });
             });
         }
         catch (Exception ex)
