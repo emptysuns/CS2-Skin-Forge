@@ -223,22 +223,24 @@ public class PlayerSkinModPlugin : BasePlugin
         int knifePaint = loadout.KnifePaint >= 0 ? loadout.KnifePaint : StaticData.KnifePaints[_rng.Next(StaticData.KnifePaints.Length)];
 
         // Use per-team glove configuration
-        int gloveIdx, glovePaint;
+        int gloveIdx, glovePaint, gloveDefIndex;
         int gloveSeed;
         float gloveWear;
         if (isCT)
         {
             gloveIdx = loadout.GloveIndexCt >= 0 ? Math.Min(loadout.GloveIndexCt, StaticData.Gloves.Length - 1) : _rng.Next(StaticData.Gloves.Length);
-            var glove = StaticData.Gloves[gloveIdx];
-            glovePaint = loadout.GlovePaintCt >= 0 ? loadout.GlovePaintCt : glove.PaintKit;
+            var gloveCt = StaticData.Gloves[gloveIdx];
+            gloveDefIndex = gloveCt.DefIndex;
+            glovePaint = loadout.GlovePaintCt >= 0 ? loadout.GlovePaintCt : gloveCt.PaintKit;
             gloveSeed = loadout.GloveSeedCt;
             gloveWear = loadout.GloveWearCt;
         }
         else
         {
             gloveIdx = loadout.GloveIndexT >= 0 ? Math.Min(loadout.GloveIndexT, StaticData.Gloves.Length - 1) : _rng.Next(StaticData.Gloves.Length);
-            var glove = StaticData.Gloves[gloveIdx];
-            glovePaint = loadout.GlovePaintT >= 0 ? loadout.GlovePaintT : glove.PaintKit;
+            var gloveT = StaticData.Gloves[gloveIdx];
+            gloveDefIndex = gloveT.DefIndex;
+            glovePaint = loadout.GlovePaintT >= 0 ? loadout.GlovePaintT : gloveT.PaintKit;
             gloveSeed = loadout.GloveSeedT;
             gloveWear = loadout.GloveWearT;
         }
@@ -263,9 +265,9 @@ public class PlayerSkinModPlugin : BasePlugin
             player.MusicKitID = kitId;
             Utilities.SetStateChanged(player, "CCSPlayerController", "m_iMusicKitID");
 
-            ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, glove.DefIndex, glovePaint, gloveSeed, gloveWear);
-            AddTimer(0.10f, () => ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, glove.DefIndex, glovePaint, gloveSeed, gloveWear));
-            AddTimer(0.25f, () => ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, glove.DefIndex, glovePaint, gloveSeed, gloveWear));
+            ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, gloveDefIndex, glovePaint, gloveSeed, gloveWear);
+            AddTimer(0.10f, () => ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, gloveDefIndex, glovePaint, gloveSeed, gloveWear));
+            AddTimer(0.25f, () => ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, gloveDefIndex, glovePaint, gloveSeed, gloveWear));
         });
 
         return HookResult.Continue;
