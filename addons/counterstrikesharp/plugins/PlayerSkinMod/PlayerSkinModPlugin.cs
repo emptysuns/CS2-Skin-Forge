@@ -19,7 +19,7 @@ namespace PlayerSkinMod;
 public class PlayerSkinModPlugin : BasePlugin
 {
     public override string ModuleName        => "PlayerSkinMod";
-    public override string ModuleVersion     => "1.4.0";
+    public override string ModuleVersion     => "1.4.1";
     public override string ModuleAuthor      => "CS2-Skin-local-mod";
     public override string ModuleDescription => "Allow players to customize weapon skins, knives, gloves, agent models, music kits locally";
 
@@ -286,7 +286,7 @@ public class PlayerSkinModPlugin : BasePlugin
         float knifeWear = loadout.KnifeWear;
 
         WeaponService.ReplaceKnife(pawn, knifeDefIndex, knifePaintKit, _legacyPaints, _setAttrByName, knifeSeed, knifeWear);
-        WeaponService.ApplyGloves(player, pawn, gloveDefIndex, glovePaintKit, _setAttrByName, gloveSeed, gloveWear);
+        WeaponService.ApplyGloves(player, pawn, gloveDefIndex, glovePaintKit, _setAttrByName, gloveSeed, gloveWear, (delay, callback) => AddTimer(delay, callback));
     }
 
     private HookResult OnGiveNamedItemPost(DynamicHook hook)

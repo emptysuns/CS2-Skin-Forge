@@ -3,7 +3,7 @@ import { Loadout } from '../utils/types';
 import { weapons, weaponCategories, getWeaponsByCategory } from '../data/weapons';
 import { weaponPaints } from '../data/skins';
 import { allStickers, getStickerImageUrl } from '../data/stickers';
-import { allKeychains, getKeychainImageUrl } from '../data/keychains';
+import { allKeychains, getKeychainImageUrl, type KeychainData } from '../data/keychains';
 import { getWeaponDefaultImage } from '../data/weaponImages';
 import { useT } from '../i18n';
 
@@ -38,6 +38,10 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
 
   const getDisplayName = (weapon: { name: string; nameZh: string }) => {
     return isChinese ? weapon.nameZh : weapon.name;
+  };
+
+  const getKeychainName = (kc: KeychainData) => {
+    return isChinese ? (kc.nameZh || kc.name) : kc.name;
   };
 
   const handlePaintSelect = (defindex: number, paintId: number) => {
@@ -452,9 +456,9 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
                 return (
                   <div className="flex items-center gap-2 mb-2 p-2 bg-gray-800 rounded">
                     <img src={getKeychainImageUrl(keychainData?.image || '')}
-                      alt={keychainData?.name || 'Keychain'} className="w-10 h-10 object-contain"
+                      alt={keychainData ? getKeychainName(keychainData) : 'Keychain'} className="w-10 h-10 object-contain"
                       onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                    <span className="text-xs text-white">{keychainData?.name || `Keychain #${current.id}`}</span>
+                    <span className="text-xs text-white">{keychainData ? getKeychainName(keychainData) : `Keychain #${current.id}`}</span>
                     <button onClick={() => clearKeychain(selectedWeapon)}
                       className="ml-auto text-xs text-red-400 hover:text-red-300">✕</button>
                   </div>
@@ -483,11 +487,11 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
                       ? 'bg-amber-600 ring-1 ring-amber-400'
                       : 'bg-gray-700 hover:bg-gray-600'
                   }`}
-                  title={keychain.name}>
-                  <img src={getKeychainImageUrl(keychain.image)} alt={keychain.name}
+                  title={getKeychainName(keychain)}>
+                  <img src={getKeychainImageUrl(keychain.image)} alt={getKeychainName(keychain)}
                     className="w-8 h-8 object-contain"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                  <span className="text-[10px] text-gray-400 truncate w-full text-center mt-0.5">{keychain.name.split(' | ').pop() || keychain.name}</span>
+                  <span className="text-[10px] text-gray-400 truncate w-full text-center mt-0.5">{getKeychainName(keychain).split(' | ').pop() || getKeychainName(keychain)}</span>
                 </button>
               ))}
               {filteredKeychains.length === 0 && (

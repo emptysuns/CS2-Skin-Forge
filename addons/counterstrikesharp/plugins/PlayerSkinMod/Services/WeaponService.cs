@@ -204,21 +204,22 @@ public static class WeaponService
         int paintKit,
         MemoryFunctionVoid<nint, string, float> setAttrByName,
         int seed = 0,
-        float wear = 0.01f)
+        float wear = 0.01f,
+        Action<float, Action>? addTimer = null)
     {
         try
         {
             var item = pawn.EconGloves;
 
-            // Clear existing attributes first
+            // Clear existing attributes
             item.NetworkedDynamicAttributes.Attributes.RemoveAll();
             item.AttributeList.Attributes.RemoveAll();
 
             // Force glove model refresh before applying (prevents model overlap)
             player.ExecuteClientCommand("lastinv");
 
-            // Short delay to let client process the model change
-            Server.NextFrame(() =>
+            // Use 0.08s timer like WeaponPaints (not Server.NextFrame)
+            void ApplyGloveAttributes()
             {
                 if (!player.IsValid || !pawn.IsValid) return;
 
@@ -226,7 +227,6 @@ public static class WeaponService
                 AssignItemId(item);
                 item.AccountID = (uint)player.SteamID;
 
-                // Clear again after delay to ensure clean state
                 item.NetworkedDynamicAttributes.Attributes.RemoveAll();
                 item.AttributeList.Attributes.RemoveAll();
 
@@ -239,18 +239,37 @@ public static class WeaponService
                 setAttrByName.Invoke(item.AttributeList.Handle, "set item texture wear", wear);
 
                 item.Initialized = true;
-                Utilities.SetStateChanged(pawn, "CCSPlayerPawn", "m_EconGloves");
 
                 // Force glove model refresh after applying (prevents model overlap)
                 player.ExecuteClientCommand("lastinv");
                 pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,0");
-                // Show gloves again after short delay
-                Server.NextFrame(() =>
+                // Show gloves again after 0.2s delay
+                if (addTimer != null)
                 {
-                    if (pawn.IsValid)
-                        pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
-                });
-            });
+                    addTimer(0.2f, () =>
+                    {
+                        if (pawn.IsValid)
+                            pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
+                    });
+                }
+                else
+                {
+                    Server.NextFrame(() =>
+                    {
+                        if (pawn.IsValid)
+                            pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
+                    });
+                }
+            }
+
+            if (addTimer != null)
+            {
+                addTimer(0.08f, ApplyGloveAttributes);
+            }
+            else
+            {
+                Server.NextFrame(ApplyGloveAttributes);
+            }
         }
         catch (Exception ex)
         {
