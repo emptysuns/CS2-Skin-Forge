@@ -1,7 +1,7 @@
 import { Loadout } from '../utils/types';
 import { knives } from '../data/knives';
 import { gloves, musicKits, agentModels } from '../data/skins';
-import { getLocalizedName, agentNameMap, musicKitNameMap } from '../data/localNames';
+import { getLocalizedName, getGloveLocalizedName, agentNameMap, musicKitNameMap } from '../data/localNames';
 import { useT } from '../i18n';
 
 interface PreviewPanelProps {
@@ -18,7 +18,9 @@ export default function PreviewPanel({ loadout }: PreviewPanelProps) {
 
   const getGloveName = (idx: number) => {
     if (idx === -1) return t("preview.random");
-    return gloves[idx]?.name || t("preview.notSelected");
+    const glove = gloves[idx];
+    if (!glove) return t("preview.notSelected");
+    return getGloveLocalizedName(glove.defindex, glove.name, lang);
   };
 
   const getMusicKitName = () => {

@@ -276,7 +276,8 @@ fn deploy_addons() -> Result<String, String> {
         .ok_or_else(|| "Cannot find resource directory".to_string())?
         .to_path_buf();
 
-    // Tauri bundles resources in a nested subdirectory matching the source path
+    // Possible resource locations (checked in priority order).
+    // Tauri MSI/dev builds: resources/addons/.../PlayerSkinMod/
     let resource_subdir = exe_dir
         .join("resources")
         .join("addons")
@@ -284,7 +285,7 @@ fn deploy_addons() -> Result<String, String> {
         .join("plugins")
         .join("PlayerSkinMod");
 
-    // Tauri v2 NSIS installer puts resources in _up_/_up_/ subdirectory
+    // Tauri v2 NSIS installer: _up_/_up_/addons/.../PlayerSkinMod/
     let nsis_resource_subdir = exe_dir
         .join("_up_")
         .join("_up_")
@@ -299,12 +300,12 @@ fn deploy_addons() -> Result<String, String> {
 
     for file in &files_to_deploy {
         // Try multiple possible resource locations (priority order)
-        let src = if nsis_resource_subdir.join(file).exists() {
-            // Tauri v2 NSIS: _up_/_up_/addons/.../PlayerSkinMod/
-            nsis_resource_subdir.join(file)
-        } else if resource_subdir.join(file).exists() {
+        let src = if resource_subdir.join(file).exists() {
             // Tauri dev/MSI: resources/addons/.../PlayerSkinMod/
             resource_subdir.join(file)
+        } else if nsis_resource_subdir.join(file).exists() {
+            // Tauri v2 NSIS: _up_/_up_/addons/.../PlayerSkinMod/
+            nsis_resource_subdir.join(file)
         } else if exe_dir.join("resources").join(file).exists() {
             // Tauri flattened: resources/PlayerSkinMod.dll
             exe_dir.join("resources").join(file)
@@ -341,13 +342,10 @@ fn deploy_addons() -> Result<String, String> {
     );
     if !skipped.is_empty() {
         result.push_str(&format!(" | Skipped (not found): [{}]", skipped.join(", ")));
-        // Add diagnostic info about where we looked
         result.push_str(&format!(
-            " | Searched: {}, {}, {}, {}",
-            nsis_resource_subdir.display(),
+            " | Searched: {}, {}",
             resource_subdir.display(),
-            exe_dir.join("resources").display(),
-            exe_dir.display()
+            exe_dir.join("resources").display()
         ));
     }
     Ok(result)

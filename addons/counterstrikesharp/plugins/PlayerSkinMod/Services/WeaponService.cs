@@ -220,11 +220,10 @@ public static class WeaponService
             item.NetworkedDynamicAttributes.Attributes.RemoveAll();
             item.AttributeList.Attributes.RemoveAll();
 
-            // 2. Force engine to release the old glove model (Nereziel pattern)
-            player.ExecuteClientCommand("lastinv");
-
-            // 3. After a short delay, set the new glove identity + skin.
-            //    The delay lets the engine finish tearing down the old model.
+            // 2. Schedule the actual glove application after a short delay,
+            //    matching the Nereziel/cs2-WeaponPaints pattern exactly.
+            //    "lastinv" is called INSIDE the timer (not before) so it only
+            //    fires once, avoiding a double-toggle that cancels the refresh.
             var delay = 0.08f;
             Action apply = () =>
             {
@@ -248,7 +247,7 @@ public static class WeaponService
 
                     item.Initialized = true;
 
-                    // 4. Force the engine to pick up the new glove model + material
+                    // Force glove model + material refresh (Nereziel pattern)
                     player.ExecuteClientCommand("lastinv");
                     pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,0");
                     addTimer?.Invoke(0.05f, () =>

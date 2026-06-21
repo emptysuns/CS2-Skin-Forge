@@ -19,7 +19,7 @@ namespace PlayerSkinMod;
 public class PlayerSkinModPlugin : BasePlugin
 {
     public override string ModuleName        => "PlayerSkinMod";
-    public override string ModuleVersion     => "1.5.1";
+    public override string ModuleVersion     => "1.5.2";
     public override string ModuleAuthor      => "CS2-Skin-local-mod";
     public override string ModuleDescription => "Allow players to customize weapon skins, knives, gloves, agent models, music kits locally";
 
@@ -315,14 +315,18 @@ public class PlayerSkinModPlugin : BasePlugin
             player.MusicKitID = kitId;
             Utilities.SetStateChanged(player, "CCSPlayerController", "m_iMusicKitID");
 
-            ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, gloveDefIndex, glovePaint, gloveSeed, gloveWear);
-            AddTimer(0.10f, () => { if (pawn != null && pawn.IsValid) ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, gloveDefIndex, glovePaint, gloveSeed, gloveWear); });
+            // Apply knife + gloves via deferred wearables.
+            // Knife is applied on both passes (immediate + 0.10f) for reliability.
+            // Gloves are applied ONLY on the first pass because the refresh uses
+            // "lastinv" which is a toggle — calling it twice cancels the effect.
+            ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, gloveDefIndex, glovePaint, gloveSeed, gloveWear, applyGloves: true);
+            AddTimer(0.10f, () => { if (pawn != null && pawn.IsValid) ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, gloveDefIndex, glovePaint, gloveSeed, gloveWear, applyGloves: false); });
         });
 
         return HookResult.Continue;
     }
 
-    private void ApplyWearables(CCSPlayerController player, CCSPlayerPawn pawn, ushort knifeDefIndex, int knifePaintKit, PlayerLoadout loadout, ushort gloveDefIndex, int glovePaintKit, int gloveSeed, float gloveWear)
+    private void ApplyWearables(CCSPlayerController player, CCSPlayerPawn pawn, ushort knifeDefIndex, int knifePaintKit, PlayerLoadout loadout, ushort gloveDefIndex, int glovePaintKit, int gloveSeed, float gloveWear, bool applyGloves = true)
     {
         if (player == null || !player.IsValid || pawn == null || !pawn.IsValid)
             return;
@@ -334,7 +338,8 @@ public class PlayerSkinModPlugin : BasePlugin
         float knifeWear = loadout.KnifeWear;
 
         WeaponService.ReplaceKnife(pawn, knifeDefIndex, knifePaintKit, _legacyPaints, _setAttrByName, knifeSeed, knifeWear);
-        WeaponService.ApplyGloves(player, pawn, gloveDefIndex, glovePaintKit, _setAttrByName, gloveSeed, gloveWear, (delay, cb) => AddTimer(delay, cb));
+        if (applyGloves)
+            WeaponService.ApplyGloves(player, pawn, gloveDefIndex, glovePaintKit, _setAttrByName, gloveSeed, gloveWear, (delay, cb) => AddTimer(delay, cb));
     }
 
     private HookResult OnGiveNamedItemPost(DynamicHook hook)
