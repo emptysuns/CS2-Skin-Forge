@@ -49,6 +49,8 @@ export interface Loadout {
   gloveSeedT: number;
   agentModelCt: number;
   agentModelT: number;
+  agentModelPathCt: string;
+  agentModelPathT: string;
   musicKit: number;
   useRandom: boolean;
 }

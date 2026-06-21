@@ -19,7 +19,7 @@ namespace PlayerSkinMod;
 public class PlayerSkinModPlugin : BasePlugin
 {
     public override string ModuleName        => "PlayerSkinMod";
-    public override string ModuleVersion     => "1.4.1";
+    public override string ModuleVersion     => "1.4.2";
     public override string ModuleAuthor      => "CS2-Skin-local-mod";
     public override string ModuleDescription => "Allow players to customize weapon skins, knives, gloves, agent models, music kits locally";
 
@@ -203,17 +203,41 @@ public class PlayerSkinModPlugin : BasePlugin
         {
             string[] pool;
             int agentIdx;
+            string agentPath;
             if (isCT)
             {
                 pool = StaticData.CtModels;
                 agentIdx = loadout.AgentModelCt;
+                agentPath = loadout.AgentModelPathCt;
             }
             else
             {
                 pool = StaticData.TModels;
                 agentIdx = loadout.AgentModelT;
+                agentPath = loadout.AgentModelPathT;
             }
-            model = agentIdx >= 0 ? pool[Math.Min(agentIdx, pool.Length - 1)] : pool[_rng.Next(pool.Length)];
+
+            // Try path-based lookup first (panel sends model path, more reliable than index)
+            if (!string.IsNullOrEmpty(agentPath))
+            {
+                // Normalize slashes for comparison (panel uses /, C# data uses \)
+                var normalizedPath = agentPath.Replace('/', '\\');
+                var found = Array.FindIndex(pool, m => m.Equals(normalizedPath, StringComparison.OrdinalIgnoreCase));
+                if (found >= 0)
+                {
+                    model = pool[found];
+                    Logger.LogInformation($"[PlayerSkinMod] Agent resolved by path: {agentPath} -> index {found}");
+                }
+            }
+
+            // Fallback to index-based lookup
+            if (model == null)
+            {
+                model = agentIdx >= 0 ? pool[Math.Min(agentIdx, pool.Length - 1)] : pool[_rng.Next(pool.Length)];
+                if (agentIdx >= 0)
+                    Logger.LogInformation($"[PlayerSkinMod] Agent resolved by index: {agentIdx} -> {model}");
+            }
+
             _playerModels[player.Slot] = model;
         }
 
@@ -267,8 +291,6 @@ public class PlayerSkinModPlugin : BasePlugin
             Utilities.SetStateChanged(player, "CCSPlayerController", "m_iMusicKitID");
 
             ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, gloveDefIndex, glovePaint, gloveSeed, gloveWear);
-            AddTimer(0.10f, () => ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, gloveDefIndex, glovePaint, gloveSeed, gloveWear));
-            AddTimer(0.25f, () => ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, gloveDefIndex, glovePaint, gloveSeed, gloveWear));
         });
 
         return HookResult.Continue;

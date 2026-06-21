@@ -36,6 +36,8 @@ const defaultLoadout: Loadout = {
   gloveSeedT: 0,
   agentModelCt: -1,
   agentModelT: -1,
+  agentModelPathCt: '',
+  agentModelPathT: '',
   musicKit: -1,
   useRandom: true,
 };

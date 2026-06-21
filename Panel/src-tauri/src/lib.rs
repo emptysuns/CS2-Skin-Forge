@@ -87,6 +87,10 @@ pub struct Loadout {
     pub agent_model_ct: i32,
     #[serde(rename = "agentModelT", default = "default_agent")]
     pub agent_model_t: i32,
+    #[serde(rename = "agentModelPathCt", default)]
+    pub agent_model_path_ct: String,
+    #[serde(rename = "agentModelPathT", default)]
+    pub agent_model_path_t: String,
     #[serde(rename = "musicKit")]
     pub music_kit: i32,
     #[serde(rename = "useRandom")]
@@ -251,31 +255,73 @@ fn deploy_addons() -> Result<String, String> {
     }
     let data = fs::read_to_string(&config_path).map_err(|e| e.to_string())?;
     let config: AppConfig = serde_json::from_str(&data).map_err(|e| e.to_string())?;
-    let cs2_path = config.cs2_path.ok_or_else(|| "CS2 path not configured.".to_string())?;
+    let cs2_path = config
+        .cs2_path
+        .ok_or_else(|| "CS2 path not configured.".to_string())?;
 
     let target_dir = PathBuf::from(&cs2_path)
-        .join("addons").join("counterstrikesharp").join("plugins").join("PlayerSkinMod");
+        .join("addons")
+        .join("counterstrikesharp")
+        .join("plugins")
+        .join("PlayerSkinMod");
     fs::create_dir_all(&target_dir).map_err(|e| e.to_string())?;
 
-    let resource_dir = std::env::current_exe()
+    let exe_dir = std::env::current_exe()
         .map_err(|e| e.to_string())?
         .parent()
         .ok_or_else(|| "Cannot find resource directory".to_string())?
         .to_path_buf();
 
+    // Tauri bundles resources in a nested subdirectory matching the source path
+    let resource_subdir = exe_dir
+        .join("resources")
+        .join("addons")
+        .join("counterstrikesharp")
+        .join("plugins")
+        .join("PlayerSkinMod");
+
     let files_to_deploy = ["PlayerSkinMod.dll", "PlayerSkinMod.json", "skins_en.json"];
     let mut deployed = Vec::new();
+    let mut skipped = Vec::new();
 
     for file in &files_to_deploy {
-        let src = resource_dir.join(file);
+        // Try nested resource path first, then exe directory
+        let src = if resource_subdir.join(file).exists() {
+            resource_subdir.join(file)
+        } else {
+            exe_dir.join(file)
+        };
+
         if src.exists() {
             let dst = target_dir.join(file);
+            // Log file sizes to verify overwrite
+            let src_size = fs::metadata(&src).map(|m| m.len()).unwrap_or(0);
+            let dst_size = if dst.exists() {
+                fs::metadata(&dst).map(|m| m.len()).unwrap_or(0)
+            } else {
+                0
+            };
             fs::copy(&src, &dst).map_err(|e| format!("Failed to copy {}: {}", file, e))?;
-            deployed.push(file.to_string());
+            let msg = if dst.exists() && dst_size > 0 {
+                format!("{} ({}B -> {}B)", file, dst_size, src_size)
+            } else {
+                format!("{} ({}B, new)", file, src_size)
+            };
+            deployed.push(msg);
+        } else {
+            skipped.push(file.to_string());
         }
     }
 
-    Ok(format!("Deployed {} files to {}", deployed.join(", "), target_dir.display()))
+    let mut result = format!(
+        "Deployed [{}] to {}",
+        deployed.join(", "),
+        target_dir.display()
+    );
+    if !skipped.is_empty() {
+        result.push_str(&format!(" | Skipped (not found): [{}]", skipped.join(", ")));
+    }
+    Ok(result)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

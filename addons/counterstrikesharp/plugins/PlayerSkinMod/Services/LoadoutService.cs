@@ -112,6 +112,17 @@ public static class LoadoutService
                     loadout.AgentModelCt = agentCtEl.GetInt32();
                 if (loadoutEl.TryGetProperty("agentModelT", out var agentTEl) && agentTEl.GetInt32() >= 0)
                     loadout.AgentModelT = agentTEl.GetInt32();
+                // New: model path for direct lookup (more reliable than index)
+                if (loadoutEl.TryGetProperty("agentModelPathCt", out var agentPathCtEl))
+                {
+                    var p = agentPathCtEl.GetString();
+                    if (!string.IsNullOrEmpty(p)) loadout.AgentModelPathCt = p;
+                }
+                if (loadoutEl.TryGetProperty("agentModelPathT", out var agentPathTEl))
+                {
+                    var p = agentPathTEl.GetString();
+                    if (!string.IsNullOrEmpty(p)) loadout.AgentModelPathT = p;
+                }
                 // Backward compat: if old agentModel exists and new fields don't, use old value for both
                 if (loadout.AgentModelCt < 0 && loadout.AgentModelT < 0 && loadoutEl.TryGetProperty("agentModel", out var oldAgentEl) && oldAgentEl.GetInt32() >= 0)
                 {

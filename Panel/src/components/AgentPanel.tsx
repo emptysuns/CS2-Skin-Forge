@@ -16,15 +16,16 @@ export default function AgentPanel({ loadout, updateLoadout }: AgentPanelProps) 
   const handleAgentSelect = (modelId: string) => {
     const arrayIndex = models.findIndex(m => m.id === modelId);
     if (arrayIndex < 0) return;
+    const selectedModel = models[arrayIndex];
     if (selectedTeam === 'ct') {
-      updateLoadout({ agentModelCt: arrayIndex, useRandom: false });
+      updateLoadout({ agentModelCt: arrayIndex, agentModelPathCt: selectedModel.model, useRandom: false });
     } else {
-      updateLoadout({ agentModelT: arrayIndex, useRandom: false });
+      updateLoadout({ agentModelT: arrayIndex, agentModelPathT: selectedModel.model, useRandom: false });
     }
   };
 
   const handleRandom = () => {
-    updateLoadout({ agentModelCt: -1, agentModelT: -1, useRandom: true });
+    updateLoadout({ agentModelCt: -1, agentModelT: -1, agentModelPathCt: '', agentModelPathT: '', useRandom: true });
   };
 
   const models = selectedTeam === 'ct' ? agentModels.ct : agentModels.t;

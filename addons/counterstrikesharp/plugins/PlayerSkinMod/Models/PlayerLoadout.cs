@@ -17,6 +17,8 @@ public class PlayerLoadout
     public int GloveSeedT { get; set; } = 0;
     public int AgentModelCt { get; set; } = -1;
     public int AgentModelT { get; set; } = -1;
+    public string AgentModelPathCt { get; set; } = "";
+    public string AgentModelPathT { get; set; } = "";
     public int MusicKit { get; set; } = -1;
     public Dictionary<ushort, int> WeaponPaints { get; set; } = new();
     public Dictionary<ushort, int> WeaponSeeds { get; set; } = new();
