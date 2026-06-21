@@ -197,14 +197,14 @@ public static class WeaponService
     }
 
     /// <summary>
-    /// Apply gloves to a player pawn.  Follows the Nereziel/cs2-WeaponPaints
-    /// pattern exactly (see WeaponAction.cs GivePlayerGloves):
+    /// Apply gloves to a player pawn.
+    /// Uses the same approach as CS2-Bot-Improver ApplyGloves (confirmed working):
     ///   1. Clear stale attributes
-    ///   2. lastinv (force engine to release old glove model)
-    ///   3. 0.08f delay
-    ///   4. Set defindex + skin attributes
-    ///   5. lastinv again (force engine to pick up new model)
-    ///   6. Bodygroup toggle 0 -> 1 (with 0.2f delay)
+    ///   2. Set defindex + skin attributes on both lists
+    ///   3. Mark Initialized = true
+    ///   4. Bodygroup toggle 0 -> 1 (with 0.2f delay) to force material refresh
+    /// Note: "lastinv" is intentionally NOT used — it can interfere with the
+    /// glove model swap on certain team/model combinations.
     /// </summary>
     public static void ApplyGloves(
         CCSPlayerController player,
@@ -220,52 +220,44 @@ public static class WeaponService
         {
             var item = pawn.EconGloves;
 
-            // 1. Clear stale attributes from previous glove type
+            // Clear stale attributes from previous glove type
             item.NetworkedDynamicAttributes.Attributes.RemoveAll();
             item.AttributeList.Attributes.RemoveAll();
 
-            // 2. Force engine to release old glove model (Nereziel pattern)
-            player.ExecuteClientCommand("lastinv");
+            // Set glove identity — drives which 3D model + UV layout is used
+            item.ItemDefinitionIndex = defIndex;
+            AssignItemId(item);
 
-            // 3. After 0.08f, set the new glove identity + skin + force refresh
-            Action apply = () =>
-            {
-                try
-                {
-                    if (!player.IsValid || !pawn.IsValid) return;
+            // Apply skin attributes on BOTH lists (critical for CS2 rendering)
+            setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture prefab", paintKit);
+            setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture seed", (float)seed);
+            setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture wear", wear);
 
-                    item.ItemDefinitionIndex = defIndex;
-                    AssignItemId(item);
+            setAttrByName.Invoke(item.AttributeList.Handle, "set item texture prefab", paintKit);
+            setAttrByName.Invoke(item.AttributeList.Handle, "set item texture seed", (float)seed);
+            setAttrByName.Invoke(item.AttributeList.Handle, "set item texture wear", wear);
 
-                    // Re-clear in case engine wrote defaults during teardown
-                    item.NetworkedDynamicAttributes.Attributes.RemoveAll();
-                    setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture prefab", paintKit);
-                    setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture seed", (float)seed);
-                    setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture wear", wear);
+            item.Initialized = true;
 
-                    item.AttributeList.Attributes.RemoveAll();
-                    setAttrByName.Invoke(item.AttributeList.Handle, "set item texture prefab", paintKit);
-                    setAttrByName.Invoke(item.AttributeList.Handle, "set item texture seed", (float)seed);
-                    setAttrByName.Invoke(item.AttributeList.Handle, "set item texture wear", wear);
-
-                    item.Initialized = true;
-
-                    // Force glove model + material refresh (Nereziel pattern)
-                    player.ExecuteClientCommand("lastinv");
-                    pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,0");
-                    addTimer?.Invoke(0.2f, () =>
-                    {
-                        if (pawn.IsValid)
-                            pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
-                    });
-                }
-                catch { }
-            };
-
+            // Force glove material/texture refresh via bodygroup toggle.
+            // Set to 0 immediately, toggle to 1 after 0.2f delay.
+            pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,0");
             if (addTimer != null)
-                addTimer(0.08f, apply);
+            {
+                addTimer(0.2f, () =>
+                {
+                    if (pawn.IsValid)
+                        pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
+                });
+            }
             else
-                apply();
+            {
+                Server.NextFrame(() =>
+                {
+                    if (pawn.IsValid)
+                        pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
+                });
+            }
         }
         catch (Exception ex)
         {

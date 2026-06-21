@@ -18,7 +18,7 @@ export default function Header({ onSettingsClick }: HeaderProps) {
             <h1 className="text-lg font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
               {t("app.title")}
             </h1>
-            <p className="text-xs text-gray-400">v1.5.3 • {t("app.localOnly")}</p>
+            <p className="text-xs text-gray-400">v1.5.4 • {t("app.localOnly")}</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
