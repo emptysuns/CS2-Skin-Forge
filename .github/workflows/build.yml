@@ -61,6 +61,10 @@ jobs:
           cp addons/counterstrikesharp/plugins/PlayerSkinMod/bin/Release/net8.0/PlayerSkinMod.dll addons/counterstrikesharp/plugins/PlayerSkinMod/
           ls -la addons/counterstrikesharp/plugins/PlayerSkinMod/
 
+      - name: Create placeholder DLL (non-Windows)
+        if: matrix.platform != 'windows-latest'
+        run: touch addons/counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.dll
+
       - name: Build Tauri app
         run: npx tauri build --target ${{ matrix.target }}
         working-directory: ./Panel
