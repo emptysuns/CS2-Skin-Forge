@@ -21,9 +21,12 @@ While this plugin:
 
 - 🔫 **Weapon Skins**: Customize skins for 30+ weapons
 - 🔪 **Knives**: Choose from 20 knife types with 28 skin options
-- 🧤 **Gloves**: 8 glove types with multiple skin variants
-- 👤 **Agent Models**: 35 CT + 44 T agent models
-- 🎵 **Music Kits**: 18+ music kits to choose from
+- 🧤 **Gloves**: 8 glove types with multiple skin variants, per-team configuration (CT/T separate gloves)
+- 👤 **Agent Models**: 35 CT + 44 T agent models (localized names: EN/ZH/JA/KO)
+- 🎵 **Music Kits**: 18+ music kits with localized names
+- 🔑 **Keychains/Charms**: Attach weapon charms with custom position and seed
+- 🏷️ **Nametags**: Set custom weapon names via nametags
+- 📊 **StatTrak™**: Enable StatTrak kill counters with custom kill counts
 - 🎲 **Random Mode**: Randomize all skins on each spawn
 - 🎨 **Custom Mode**: Mix and match specific skins
 - 🖥️ **Desktop Panel**: Native Tauri application for easy customization

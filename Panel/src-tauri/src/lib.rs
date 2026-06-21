@@ -22,6 +22,27 @@ fn default_scale() -> f32 {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct KeychainInfo {
+    pub id: u32,
+    #[serde(default, rename = "offsetX")]
+    pub offset_x: f32,
+    #[serde(default, rename = "offsetY")]
+    pub offset_y: f32,
+    #[serde(default, rename = "offsetZ")]
+    pub offset_z: f32,
+    #[serde(default)]
+    pub seed: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct StatTrakInfo {
+    #[serde(default)]
+    pub enabled: bool,
+    #[serde(default)]
+    pub count: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Loadout {
     #[serde(rename = "weaponPaints")]
     pub weapon_paints: std::collections::HashMap<u16, i32>,
@@ -31,6 +52,12 @@ pub struct Loadout {
     pub weapon_wears: std::collections::HashMap<u16, f32>,
     #[serde(rename = "weaponSeeds", default)]
     pub weapon_seeds: std::collections::HashMap<u16, i32>,
+    #[serde(rename = "weaponKeychains", default)]
+    pub weapon_keychains: std::collections::HashMap<u16, KeychainInfo>,
+    #[serde(rename = "weaponNametags", default)]
+    pub weapon_nametags: std::collections::HashMap<u16, String>,
+    #[serde(rename = "weaponStatTrak", default)]
+    pub weapon_stattrak: std::collections::HashMap<u16, StatTrakInfo>,
     #[serde(rename = "knifeIndex")]
     pub knife_index: i32,
     #[serde(rename = "knifePaint")]
@@ -39,14 +66,23 @@ pub struct Loadout {
     pub knife_wear: f32,
     #[serde(rename = "knifeSeed", default)]
     pub knife_seed: i32,
-    #[serde(rename = "gloveIndex")]
-    pub glove_index: i32,
-    #[serde(rename = "glovePaint")]
-    pub glove_paint: i32,
-    #[serde(rename = "gloveWear", default = "default_wear")]
-    pub glove_wear: f32,
-    #[serde(rename = "gloveSeed", default)]
-    pub glove_seed: i32,
+    // Per-team gloves
+    #[serde(rename = "gloveIndexCt", default = "default_glove")]
+    pub glove_index_ct: i32,
+    #[serde(rename = "glovePaintCt", default = "default_glove")]
+    pub glove_paint_ct: i32,
+    #[serde(rename = "gloveWearCt", default = "default_wear")]
+    pub glove_wear_ct: f32,
+    #[serde(rename = "gloveSeedCt", default)]
+    pub glove_seed_ct: i32,
+    #[serde(rename = "gloveIndexT", default = "default_glove")]
+    pub glove_index_t: i32,
+    #[serde(rename = "glovePaintT", default = "default_glove")]
+    pub glove_paint_t: i32,
+    #[serde(rename = "gloveWearT", default = "default_wear")]
+    pub glove_wear_t: f32,
+    #[serde(rename = "gloveSeedT", default)]
+    pub glove_seed_t: i32,
     #[serde(rename = "agentModelCt", default = "default_agent")]
     pub agent_model_ct: i32,
     #[serde(rename = "agentModelT", default = "default_agent")]
@@ -58,6 +94,10 @@ pub struct Loadout {
 }
 
 fn default_agent() -> i32 {
+    -1
+}
+
+fn default_glove() -> i32 {
     -1
 }
 

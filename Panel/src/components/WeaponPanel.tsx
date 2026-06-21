@@ -3,6 +3,7 @@ import { Loadout } from '../utils/types';
 import { weapons, weaponCategories, getWeaponsByCategory } from '../data/weapons';
 import { weaponPaints } from '../data/skins';
 import { allStickers, getStickerImageUrl } from '../data/stickers';
+import { allKeychains, getKeychainImageUrl } from '../data/keychains';
 import { getWeaponDefaultImage } from '../data/weaponImages';
 import { useT } from '../i18n';
 
@@ -18,6 +19,8 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
   const [activeStickerSlot, setActiveStickerSlot] = useState(0);
   const [stickerSearch, setStickerSearch] = useState('');
   const [stickerLimit, setStickerLimit] = useState(100);
+  const [keychainSearch, setKeychainSearch] = useState('');
+  const [keychainLimit, setKeychainLimit] = useState(100);
 
   const filteredWeapons = getWeaponsByCategory(selectedCategory);
   const isChinese = lang === 'schinese' || lang === 'tchinese';
@@ -53,11 +56,20 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
     delete newWears[defindex];
     const newSeeds = { ...loadout.weaponSeeds };
     delete newSeeds[defindex];
+    const newKeychains = { ...loadout.weaponKeychains };
+    delete newKeychains[defindex];
+    const newNametags = { ...loadout.weaponNametags };
+    delete newNametags[defindex];
+    const newStatTrak = { ...loadout.weaponStatTrak };
+    delete newStatTrak[defindex];
     updateLoadout({
       weaponPaints: newPaints,
       weaponStickers: newStickers,
       weaponWears: newWears,
       weaponSeeds: newSeeds,
+      weaponKeychains: newKeychains,
+      weaponNametags: newNametags,
+      weaponStatTrak: newStatTrak,
       useRandom: Object.keys(newPaints).length === 0,
     });
   };
@@ -90,6 +102,50 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
     });
   };
 
+  // Keychain handlers
+  const handleKeychainSelect = (defindex: number, keychainId: number) => {
+    const existing = loadout.weaponKeychains[defindex] || { id: 0, offsetX: 0, offsetY: 0, offsetZ: 0, seed: 0 };
+    updateLoadout({
+      weaponKeychains: { ...loadout.weaponKeychains, [defindex]: { ...existing, id: keychainId } },
+    });
+  };
+
+  const clearKeychain = (defindex: number) => {
+    const newKeychains = { ...loadout.weaponKeychains };
+    delete newKeychains[defindex];
+    updateLoadout({ weaponKeychains: newKeychains });
+  };
+
+  // Nametag handlers
+  const handleNametagChange = (defindex: number, name: string) => {
+    const newNametags = { ...loadout.weaponNametags };
+    if (name.trim() === '') {
+      delete newNametags[defindex];
+    } else {
+      newNametags[defindex] = name;
+    }
+    updateLoadout({ weaponNametags: newNametags });
+  };
+
+  // StatTrak handlers
+  const handleStatTrakToggle = (defindex: number) => {
+    const existing = loadout.weaponStatTrak[defindex] || { enabled: false, count: 0 };
+    const newStatTrak = { ...loadout.weaponStatTrak };
+    if (existing.enabled) {
+      delete newStatTrak[defindex];
+    } else {
+      newStatTrak[defindex] = { enabled: true, count: 0 };
+    }
+    updateLoadout({ weaponStatTrak: newStatTrak });
+  };
+
+  const handleStatTrakCountChange = (defindex: number, count: number) => {
+    const existing = loadout.weaponStatTrak[defindex] || { enabled: true, count: 0 };
+    updateLoadout({
+      weaponStatTrak: { ...loadout.weaponStatTrak, [defindex]: { ...existing, count } },
+    });
+  };
+
   const getCategoryLabel = (category: string) => {
     const keyMap: Record<string, string> = {
       'All': 'weapon.all', 'Pistols': 'weapon.pistols', 'Rifles': 'weapon.rifles',
@@ -108,14 +164,32 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
     return filtered;
   }, [stickerSearch]);
 
-  // Reset limit when search changes
+  // Filter keychains based on search
+  const allFilteredKeychains = useMemo(() => {
+    let filtered = allKeychains;
+    if (keychainSearch.trim()) {
+      const query = keychainSearch.toLowerCase();
+      filtered = filtered.filter(k => k.name.toLowerCase().includes(query));
+    }
+    return filtered;
+  }, [keychainSearch]);
+
+  // Reset limits when search changes
   useEffect(() => {
     setStickerLimit(100);
   }, [stickerSearch]);
 
+  useEffect(() => {
+    setKeychainLimit(100);
+  }, [keychainSearch]);
+
   const filteredStickers = useMemo(() => {
     return allFilteredStickers.slice(0, stickerLimit);
   }, [allFilteredStickers, stickerLimit]);
+
+  const filteredKeychains = useMemo(() => {
+    return allFilteredKeychains.slice(0, keychainLimit);
+  }, [allFilteredKeychains, keychainLimit]);
 
   const wearLabels = ['FN', 'MW', 'FT', 'WW', 'BS'];
   const wearValues = [0.01, 0.07, 0.15, 0.38, 0.45];
@@ -236,6 +310,49 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
                     <span className="text-xs text-gray-300 w-10 text-right">{loadout.weaponSeeds[selectedWeapon] ?? 0}</span>
                   </div>
                 </div>
+
+                {/* Nametag */}
+                <div>
+                  <label className="text-xs text-gray-400 block mb-1">{t("weapon.nametag")}</label>
+                  <input
+                    type="text"
+                    placeholder={t("weapon.nametagPlaceholder")}
+                    value={loadout.weaponNametags[selectedWeapon] ?? ''}
+                    onChange={(e) => handleNametagChange(selectedWeapon, e.target.value)}
+                    maxLength={64}
+                    className="w-full bg-gray-700 text-white text-xs rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  />
+                </div>
+
+                {/* StatTrak */}
+                <div className="flex items-center justify-between">
+                  <label className="text-xs text-gray-400">{t("weapon.stattrak")}</label>
+                  <button
+                    onClick={() => handleStatTrakToggle(selectedWeapon)}
+                    className={`px-3 py-1 rounded text-xs font-medium transition-all ${
+                      loadout.weaponStatTrak[selectedWeapon]?.enabled
+                        ? 'bg-orange-600 text-white'
+                        : 'bg-gray-600 text-gray-400 hover:bg-gray-500'
+                    }`}
+                  >
+                    {loadout.weaponStatTrak[selectedWeapon]?.enabled ? 'ON' : 'OFF'}
+                  </button>
+                </div>
+                {loadout.weaponStatTrak[selectedWeapon]?.enabled && (
+                  <div>
+                    <label className="text-xs text-gray-400 block mb-1">{t("weapon.stattrakCount")}</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="0"
+                        max="999999"
+                        value={loadout.weaponStatTrak[selectedWeapon]?.count ?? 0}
+                        onChange={(e) => handleStatTrakCountChange(selectedWeapon, parseInt(e.target.value) || 0)}
+                        className="w-24 bg-gray-700 text-white text-xs rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -320,6 +437,72 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
               <p className="text-[10px] text-gray-600 mt-1">
                 {`Showing ${filteredStickers.length} of ${allFilteredStickers.length} stickers - use search to find specific stickers`}
               </p>
+            )}
+          </div>
+
+          {/* Keychain Section */}
+          <div className="mt-4 border-t border-gray-700 pt-3">
+            <h4 className="text-xs font-semibold text-gray-300 mb-2">{t("weapon.keychain")}</h4>
+            
+            {/* Current keychain */}
+            {(() => {
+              const current = loadout.weaponKeychains[selectedWeapon];
+              if (current?.id > 0) {
+                const keychainData = allKeychains.find(k => k.id === current.id);
+                return (
+                  <div className="flex items-center gap-2 mb-2 p-2 bg-gray-800 rounded">
+                    <img src={getKeychainImageUrl(keychainData?.image || '')}
+                      alt={keychainData?.name || 'Keychain'} className="w-10 h-10 object-contain"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    <span className="text-xs text-white">{keychainData?.name || `Keychain #${current.id}`}</span>
+                    <button onClick={() => clearKeychain(selectedWeapon)}
+                      className="ml-auto text-xs text-red-400 hover:text-red-300">✕</button>
+                  </div>
+                );
+              }
+              return <p className="text-xs text-gray-500 mb-2">No keychain equipped</p>;
+            })()}
+
+            {/* Keychain search */}
+            <div className="flex gap-2 mb-2">
+              <input
+                type="text"
+                placeholder={t("weapon.keychainSearch")}
+                value={keychainSearch}
+                onChange={(e) => setKeychainSearch(e.target.value)}
+                className="flex-1 bg-gray-700 text-white text-xs rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+            </div>
+
+            {/* Keychain grid */}
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5 max-h-48 overflow-y-auto">
+              {filteredKeychains.map(keychain => (
+                <button key={keychain.id} onClick={() => handleKeychainSelect(selectedWeapon, keychain.id)}
+                  className={`flex flex-col items-center p-1.5 rounded transition-all ${
+                    loadout.weaponKeychains[selectedWeapon]?.id === keychain.id
+                      ? 'bg-amber-600 ring-1 ring-amber-400'
+                      : 'bg-gray-700 hover:bg-gray-600'
+                  }`}
+                  title={keychain.name}>
+                  <img src={getKeychainImageUrl(keychain.image)} alt={keychain.name}
+                    className="w-8 h-8 object-contain"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  <span className="text-[10px] text-gray-400 truncate w-full text-center mt-0.5">{keychain.name.split(' | ').pop() || keychain.name}</span>
+                </button>
+              ))}
+              {filteredKeychains.length === 0 && (
+                <div className="col-span-full text-center text-xs text-gray-500 py-2">
+                  No keychains found
+                </div>
+              )}
+            </div>
+            {allFilteredKeychains.length > keychainLimit && (
+              <button
+                onClick={() => setKeychainLimit(prev => prev + 100)}
+                className="w-full mt-2 py-1.5 text-xs text-gray-300 bg-gray-700 hover:bg-gray-600 rounded transition-all"
+              >
+                Load More ({filteredKeychains.length} / {allFilteredKeychains.length})
+              </button>
             )}
           </div>
         </div>

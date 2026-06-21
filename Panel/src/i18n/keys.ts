@@ -26,6 +26,13 @@ export const EN = {
   "weapon.seed": "Seed",
   "weapon.settings": "Skin Settings",
   "weapon.stickerSearch": "Search stickers...",
+  "weapon.nametag": "Nametag",
+  "weapon.nametagPlaceholder": "Enter nametag...",
+  "weapon.stattrak": "StatTrak™",
+  "weapon.stattrakEnabled": "Enable StatTrak™",
+  "weapon.stattrakCount": "Kill Count",
+  "weapon.keychain": "Keychain / Charm",
+  "weapon.keychainSearch": "Search keychains...",
 
   // Knife Panel
   "knife.title": "Knife Selection",
@@ -40,6 +47,8 @@ export const EN = {
   "glove.selectPaint": "Glove Paint",
   "glove.wear": "Wear",
   "glove.seed": "Seed",
+  "glove.ct": "CT Gloves",
+  "glove.t": "T Gloves",
 
   // Agent Panel
   "agent.title": "Agent Models",

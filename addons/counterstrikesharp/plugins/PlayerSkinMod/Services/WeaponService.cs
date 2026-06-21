@@ -47,6 +47,24 @@ public static class WeaponService
         }
     }
 
+    public static void ApplyKeychains(
+        CBasePlayerWeapon weapon,
+        KeychainInfo keychain,
+        MemoryFunctionVoid<nint, string, float> setAttrByName)
+    {
+        if (keychain.Id == 0) return;
+        var item = weapon.AttributeManager?.Item;
+        if (item == null) return;
+
+        var handle = item.NetworkedDynamicAttributes.Handle;
+        setAttrByName.Invoke(handle, "keychain slot 0 id", UIntToFloat(keychain.Id));
+        setAttrByName.Invoke(handle, "keychain slot 0 offset x", keychain.OffsetX);
+        setAttrByName.Invoke(handle, "keychain slot 0 offset y", keychain.OffsetY);
+        setAttrByName.Invoke(handle, "keychain slot 0 offset z", keychain.OffsetZ);
+        if (keychain.Seed > 0)
+            setAttrByName.Invoke(handle, "keychain slot 0 seed", (float)keychain.Seed);
+    }
+
     public static void ApplySkinToWeapon(
         CEconEntity weapon,
         ushort defIndex,
@@ -56,7 +74,9 @@ public static class WeaponService
         ref bool skinErrorLogged,
         int seed = 0,
         float wear = 0.01f,
-        uint accountId = 0)
+        uint accountId = 0,
+        string? nametag = null,
+        StatTrakInfo? statTrak = null)
     {
         try
         {
@@ -79,6 +99,25 @@ public static class WeaponService
             setAttrByName.Invoke(item.AttributeList.Handle, "set item texture prefab", paintKit);
             setAttrByName.Invoke(item.AttributeList.Handle, "set item texture seed", (float)seed);
             setAttrByName.Invoke(item.AttributeList.Handle, "set item texture wear", wear);
+
+            // Apply nametag
+            if (!string.IsNullOrEmpty(nametag))
+            {
+                item.CustomName = nametag;
+            }
+
+            // Apply StatTrak
+            if (statTrak != null && statTrak.Enabled)
+            {
+                item.EntityQuality = 9; // StatTrak quality
+                setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "kill eater", 80);
+                setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "kill eater score type", 0);
+                setAttrByName.Invoke(item.AttributeList.Handle, "kill eater", 80);
+                setAttrByName.Invoke(item.AttributeList.Handle, "kill eater score type", 0);
+                // Set StatTrak count via attribute
+                setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "kill eater user 1", (float)statTrak.Count);
+                setAttrByName.Invoke(item.AttributeList.Handle, "kill eater user 1", (float)statTrak.Count);
+            }
 
             Utilities.SetStateChanged(weapon, "CEconEntity", "m_AttributeManager");
 

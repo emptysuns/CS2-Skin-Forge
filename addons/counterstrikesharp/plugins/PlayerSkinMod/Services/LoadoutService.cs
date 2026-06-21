@@ -57,17 +57,55 @@ public static class LoadoutService
                 if (loadoutEl.TryGetProperty("knifeSeed", out var knifeSeedEl))
                     loadout.KnifeSeed = knifeSeedEl.GetInt32();
 
-                if (loadoutEl.TryGetProperty("gloveIndex", out var gloveIdxEl) && gloveIdxEl.GetInt32() >= 0)
-                    loadout.GloveIndex = gloveIdxEl.GetInt32();
+                // Per-team gloves
+                if (loadoutEl.TryGetProperty("gloveIndexCt", out var gloveIdxCtEl) && gloveIdxCtEl.GetInt32() >= 0)
+                    loadout.GloveIndexCt = gloveIdxCtEl.GetInt32();
+                if (loadoutEl.TryGetProperty("glovePaintCt", out var glovePaintCtEl) && glovePaintCtEl.GetInt32() >= 0)
+                    loadout.GlovePaintCt = glovePaintCtEl.GetInt32();
+                if (loadoutEl.TryGetProperty("gloveWearCt", out var gloveWearCtEl))
+                    loadout.GloveWearCt = (float)gloveWearCtEl.GetDouble();
+                if (loadoutEl.TryGetProperty("gloveSeedCt", out var gloveSeedCtEl))
+                    loadout.GloveSeedCt = gloveSeedCtEl.GetInt32();
 
-                if (loadoutEl.TryGetProperty("glovePaint", out var glovePaintEl) && glovePaintEl.GetInt32() >= 0)
-                    loadout.GlovePaint = glovePaintEl.GetInt32();
+                if (loadoutEl.TryGetProperty("gloveIndexT", out var gloveIdxTEl) && gloveIdxTEl.GetInt32() >= 0)
+                    loadout.GloveIndexT = gloveIdxTEl.GetInt32();
+                if (loadoutEl.TryGetProperty("glovePaintT", out var glovePaintTEl) && glovePaintTEl.GetInt32() >= 0)
+                    loadout.GlovePaintT = glovePaintTEl.GetInt32();
+                if (loadoutEl.TryGetProperty("gloveWearT", out var gloveWearTEl))
+                    loadout.GloveWearT = (float)gloveWearTEl.GetDouble();
+                if (loadoutEl.TryGetProperty("gloveSeedT", out var gloveSeedTEl))
+                    loadout.GloveSeedT = gloveSeedTEl.GetInt32();
 
-                if (loadoutEl.TryGetProperty("gloveWear", out var gloveWearEl))
-                    loadout.GloveWear = (float)gloveWearEl.GetDouble();
-
-                if (loadoutEl.TryGetProperty("gloveSeed", out var gloveSeedEl))
-                    loadout.GloveSeed = gloveSeedEl.GetInt32();
+                // Backward compat: old single glove fields → use for both teams
+                if (loadout.GloveIndexCt < 0 && loadout.GloveIndexT < 0)
+                {
+                    if (loadoutEl.TryGetProperty("gloveIndex", out var oldGloveIdxEl) && oldGloveIdxEl.GetInt32() >= 0)
+                    {
+                        loadout.GloveIndexCt = oldGloveIdxEl.GetInt32();
+                        loadout.GloveIndexT = oldGloveIdxEl.GetInt32();
+                    }
+                }
+                if (loadout.GlovePaintCt < 0 && loadout.GlovePaintT < 0)
+                {
+                    if (loadoutEl.TryGetProperty("glovePaint", out var oldGlovePaintEl) && oldGlovePaintEl.GetInt32() >= 0)
+                    {
+                        loadout.GlovePaintCt = oldGlovePaintEl.GetInt32();
+                        loadout.GlovePaintT = oldGlovePaintEl.GetInt32();
+                    }
+                }
+                // For wear/seed backward compat, only apply if old fields exist and new ones are default
+                if (loadoutEl.TryGetProperty("gloveWear", out var oldGloveWearEl))
+                {
+                    var oldWear = (float)oldGloveWearEl.GetDouble();
+                    if (loadout.GloveWearCt == 0.01f) loadout.GloveWearCt = oldWear;
+                    if (loadout.GloveWearT == 0.01f) loadout.GloveWearT = oldWear;
+                }
+                if (loadoutEl.TryGetProperty("gloveSeed", out var oldGloveSeedEl))
+                {
+                    var oldSeed = oldGloveSeedEl.GetInt32();
+                    if (loadout.GloveSeedCt == 0) loadout.GloveSeedCt = oldSeed;
+                    if (loadout.GloveSeedT == 0) loadout.GloveSeedT = oldSeed;
+                }
 
                 // New: separate CT/T agent models
                 if (loadoutEl.TryGetProperty("agentModelCt", out var agentCtEl) && agentCtEl.GetInt32() >= 0)
@@ -135,8 +173,55 @@ public static class LoadoutService
                     }
                 }
 
+                // NEW: Load weapon keychains
+                if (loadoutEl.TryGetProperty("weaponKeychains", out var wkEl))
+                {
+                    foreach (var wk in wkEl.EnumerateObject())
+                    {
+                        if (!ushort.TryParse(wk.Name, out ushort defIdx)) continue;
+                        var kc = new KeychainInfo();
+                        var kcEl = wk.Value;
+                        if (kcEl.TryGetProperty("id", out var kcIdEl)) kc.Id = (uint)kcIdEl.GetInt32();
+                        if (kcEl.TryGetProperty("offsetX", out var kcOxEl)) kc.OffsetX = (float)kcOxEl.GetDouble();
+                        if (kcEl.TryGetProperty("offsetY", out var kcOyEl)) kc.OffsetY = (float)kcOyEl.GetDouble();
+                        if (kcEl.TryGetProperty("offsetZ", out var kcOzEl)) kc.OffsetZ = (float)kcOzEl.GetDouble();
+                        if (kcEl.TryGetProperty("seed", out var kcSeedEl)) kc.Seed = kcSeedEl.GetInt32();
+                        if (kc.Id > 0)
+                            loadout.WeaponKeychains[defIdx] = kc;
+                    }
+                }
+
+                // NEW: Load weapon nametags
+                if (loadoutEl.TryGetProperty("weaponNametags", out var wnEl))
+                {
+                    foreach (var wn in wnEl.EnumerateObject())
+                    {
+                        if (ushort.TryParse(wn.Name, out ushort defIdx))
+                        {
+                            var name = wn.Value.GetString();
+                            if (!string.IsNullOrEmpty(name))
+                                loadout.WeaponNametags[defIdx] = name;
+                        }
+                    }
+                }
+
+                // NEW: Load weapon stattrak
+                if (loadoutEl.TryGetProperty("weaponStatTrak", out var wst2El))
+                {
+                    foreach (var ws in wst2El.EnumerateObject())
+                    {
+                        if (!ushort.TryParse(ws.Name, out ushort defIdx)) continue;
+                        var st = new StatTrakInfo();
+                        var stEl = ws.Value;
+                        if (stEl.TryGetProperty("enabled", out var enEl)) st.Enabled = enEl.GetBoolean();
+                        if (stEl.TryGetProperty("count", out var cntEl)) st.Count = cntEl.GetInt32();
+                        if (st.Enabled)
+                            loadout.WeaponStatTrak[defIdx] = st;
+                    }
+                }
+
                 playerLoadouts[slot] = loadout;
-                logger.LogInformation($"[PlayerSkinMod] Loaded loadout for slot {slot}: knife={loadout.KnifeIndex}, glove={loadout.GloveIndex}, agentCT={loadout.AgentModelCt}, agentT={loadout.AgentModelT}, music={loadout.MusicKit}, weapons={loadout.WeaponPaints.Count}, random={loadout.UseRandom}");
+                logger.LogInformation($"[PlayerSkinMod] Loaded loadout for slot {slot}: knife={loadout.KnifeIndex}, gloveCT={loadout.GloveIndexCt}, gloveT={loadout.GloveIndexT}, agentCT={loadout.AgentModelCt}, agentT={loadout.AgentModelT}, music={loadout.MusicKit}, weapons={loadout.WeaponPaints.Count}, keychains={loadout.WeaponKeychains.Count}, random={loadout.UseRandom}");
             }
         }
         catch (Exception ex)

@@ -16,9 +16,9 @@ export default function PreviewPanel({ loadout }: PreviewPanelProps) {
     return knives[loadout.knifeIndex]?.name || t("preview.notSelected");
   };
 
-  const getGloveName = () => {
-    if (loadout.gloveIndex === -1) return t("preview.notSelected");
-    return gloves[loadout.gloveIndex]?.name || t("preview.notSelected");
+  const getGloveName = (idx: number) => {
+    if (idx === -1) return t("preview.random");
+    return gloves[idx]?.name || t("preview.notSelected");
   };
 
   const getMusicKitName = () => {
@@ -61,7 +61,8 @@ export default function PreviewPanel({ loadout }: PreviewPanelProps) {
         <div className="flex items-start space-x-2">
           <div>
             <div className="text-xs font-medium text-gray-400">{t("preview.gloves")}</div>
-            <div className="text-xs text-white">{getGloveName()}</div>
+            <div className="text-xs text-blue-300">{t("glove.ct")}: {getGloveName(loadout.gloveIndexCt)}</div>
+            <div className="text-xs text-orange-300">{t("glove.t")}: {getGloveName(loadout.gloveIndexT)}</div>
           </div>
         </div>
 

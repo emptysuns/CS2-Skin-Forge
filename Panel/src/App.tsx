@@ -9,33 +9,43 @@ import MusicKitPanel from './components/MusicKitPanel';
 import PreviewPanel from './components/PreviewPanel';
 import StatusBar from './components/StatusBar';
 import SettingsPanel from './components/SettingsPanel';
+import DisclaimerDialog from './components/DisclaimerDialog';
 import { Loadout } from './utils/types';
 import { useT } from './i18n';
 import { api, type AppConfig } from './lib/api';
+
+const defaultLoadout: Loadout = {
+  weaponPaints: {},
+  weaponStickers: {},
+  weaponWears: {},
+  weaponSeeds: {},
+  weaponKeychains: {},
+  weaponNametags: {},
+  weaponStatTrak: {},
+  knifeIndex: -1,
+  knifePaint: -1,
+  knifeWear: 0.01,
+  knifeSeed: 0,
+  gloveIndexCt: -1,
+  glovePaintCt: -1,
+  gloveWearCt: 0.01,
+  gloveSeedCt: 0,
+  gloveIndexT: -1,
+  glovePaintT: -1,
+  gloveWearT: 0.01,
+  gloveSeedT: 0,
+  agentModelCt: -1,
+  agentModelT: -1,
+  musicKit: -1,
+  useRandom: true,
+};
 
 function App() {
   const { t } = useT();
   const [activeTab, setActiveTab] = useState('weapons');
   const [showSettings, setShowSettings] = useState(false);
   const [_config, setConfig] = useState<AppConfig | null>(null);
-  const [loadout, setLoadout] = useState<Loadout>({
-    weaponPaints: {},
-    weaponStickers: {},
-    weaponWears: {},
-    weaponSeeds: {},
-    knifeIndex: -1,
-    knifePaint: -1,
-    knifeWear: 0.01,
-    knifeSeed: 0,
-    gloveIndex: -1,
-    glovePaint: -1,
-    gloveWear: 0.01,
-    gloveSeed: 0,
-    agentModelCt: -1,
-    agentModelT: -1,
-    musicKit: -1,
-    useRandom: true,
-  });
+  const [loadout, setLoadout] = useState<Loadout>({ ...defaultLoadout });
 
   const [status, setStatus] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
@@ -48,7 +58,7 @@ function App() {
         // Try to load saved loadout for slot 0 (local player)
         const saved = await api.loadLoadout(0);
         if (saved) {
-          setLoadout(saved);
+          setLoadout(prev => ({ ...prev, ...saved }));
         }
       } catch (e) {
         console.error("Failed to initialize:", e);
@@ -74,24 +84,7 @@ function App() {
   };
 
   const handleReset = () => {
-    setLoadout({
-      weaponPaints: {},
-      weaponStickers: {},
-      weaponWears: {},
-      weaponSeeds: {},
-      knifeIndex: -1,
-      knifePaint: -1,
-      knifeWear: 0.01,
-      knifeSeed: 0,
-      gloveIndex: -1,
-      glovePaint: -1,
-      gloveWear: 0.01,
-      gloveSeed: 0,
-      agentModelCt: -1,
-      agentModelT: -1,
-      musicKit: -1,
-      useRandom: true,
-    });
+    setLoadout({ ...defaultLoadout });
     setStatus({ message: t("status.reset"), type: 'info' });
     setTimeout(() => setStatus(null), 3000);
   };
@@ -155,6 +148,7 @@ function App() {
         onClose={() => setShowSettings(false)}
         onConfigSaved={setConfig}
       />
+      <DisclaimerDialog />
     </div>
   );
 }

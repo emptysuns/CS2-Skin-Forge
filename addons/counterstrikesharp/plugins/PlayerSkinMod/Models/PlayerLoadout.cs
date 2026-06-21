@@ -6,10 +6,15 @@ public class PlayerLoadout
     public int KnifePaint { get; set; } = -1;
     public float KnifeWear { get; set; } = 0.01f;
     public int KnifeSeed { get; set; } = 0;
-    public int GloveIndex { get; set; } = -1;
-    public int GlovePaint { get; set; } = -1;
-    public float GloveWear { get; set; } = 0.01f;
-    public int GloveSeed { get; set; } = 0;
+    // Per-team gloves
+    public int GloveIndexCt { get; set; } = -1;
+    public int GlovePaintCt { get; set; } = -1;
+    public float GloveWearCt { get; set; } = 0.01f;
+    public int GloveSeedCt { get; set; } = 0;
+    public int GloveIndexT { get; set; } = -1;
+    public int GlovePaintT { get; set; } = -1;
+    public float GloveWearT { get; set; } = 0.01f;
+    public int GloveSeedT { get; set; } = 0;
     public int AgentModelCt { get; set; } = -1;
     public int AgentModelT { get; set; } = -1;
     public int MusicKit { get; set; } = -1;
@@ -17,6 +22,9 @@ public class PlayerLoadout
     public Dictionary<ushort, int> WeaponSeeds { get; set; } = new();
     public Dictionary<ushort, float> WeaponWears { get; set; } = new();
     public Dictionary<ushort, List<StickerInfo>> WeaponStickers { get; set; } = new();
+    public Dictionary<ushort, KeychainInfo> WeaponKeychains { get; set; } = new();
+    public Dictionary<ushort, string> WeaponNametags { get; set; } = new();
+    public Dictionary<ushort, StatTrakInfo> WeaponStatTrak { get; set; } = new();
     public bool UseRandom { get; set; } = true;
 }
 
@@ -29,4 +37,19 @@ public class StickerInfo
     public float Wear { get; set; } = 0f;
     public float Scale { get; set; } = 1f;
     public float Rotation { get; set; } = 0f;
+}
+
+public class KeychainInfo
+{
+    public uint Id { get; set; }
+    public float OffsetX { get; set; } = 0f;
+    public float OffsetY { get; set; } = 0f;
+    public float OffsetZ { get; set; } = 0f;
+    public int Seed { get; set; } = 0;
+}
+
+public class StatTrakInfo
+{
+    public bool Enabled { get; set; } = false;
+    public int Count { get; set; } = 0;
 }

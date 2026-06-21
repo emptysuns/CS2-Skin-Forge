@@ -10,51 +10,109 @@ interface GlovePanelProps {
 
 export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) {
   const { t } = useT();
-  const [selectedGlove, setSelectedGlove] = useState<number | null>(
-    loadout.gloveIndex >= 0 ? loadout.gloveIndex : null
-  );
-  const [wearValue, setWearValue] = useState(loadout.gloveWear ?? 0.01);
-  const [seedValue, setSeedValue] = useState(loadout.gloveSeed ?? 0);
+  const [selectedTeam, setSelectedTeam] = useState<'ct' | 't'>('ct');
+  const [selectedGlove, setSelectedGlove] = useState<number | null>(() => {
+    const idx = selectedTeam === 'ct' ? loadout.gloveIndexCt : loadout.gloveIndexT;
+    return idx >= 0 ? idx : null;
+  });
 
   const wearLabels = ['FN', 'MW', 'FT', 'WW', 'BS'];
   const wearValues = [0.01, 0.07, 0.15, 0.38, 0.45];
+
+  const getIndexField = () => selectedTeam === 'ct' ? 'gloveIndexCt' : 'gloveIndexT';
+  const getPaintField = () => selectedTeam === 'ct' ? 'glovePaintCt' : 'glovePaintT';
+  const getWearField = () => selectedTeam === 'ct' ? 'gloveWearCt' : 'gloveWearT';
+  const getSeedField = () => selectedTeam === 'ct' ? 'gloveSeedCt' : 'gloveSeedT';
+
+  const currentPaint = selectedTeam === 'ct' ? loadout.glovePaintCt : loadout.glovePaintT;
+  const currentWear = selectedTeam === 'ct' ? loadout.gloveWearCt : loadout.gloveWearT;
+  const currentSeed = selectedTeam === 'ct' ? loadout.gloveSeedCt : loadout.gloveSeedT;
 
   const handleGloveSelect = (index: number) => {
     setSelectedGlove(index);
     const glove = gloves[index];
     updateLoadout({
-      gloveIndex: index,
-      glovePaint: loadout.glovePaint >= 0 ? loadout.glovePaint : glove.paints[0].id,
+      [getIndexField()]: index,
+      [getPaintField()]: currentPaint >= 0 ? currentPaint : glove.paints[0].id,
       useRandom: false,
-    });
+    } as any);
   };
 
   const handlePaintSelect = (paintId: number) => {
-    updateLoadout({ glovePaint: paintId, useRandom: false });
+    updateLoadout({ [getPaintField()]: paintId, useRandom: false } as any);
   };
 
   const handleWearChange = (wear: number) => {
-    setWearValue(wear);
-    updateLoadout({ gloveWear: wear });
+    updateLoadout({ [getWearField()]: wear } as any);
   };
 
   const handleSeedChange = (seed: number) => {
-    setSeedValue(seed);
-    updateLoadout({ gloveSeed: seed });
+    updateLoadout({ [getSeedField()]: seed } as any);
   };
 
   const handleRandom = () => {
     setSelectedGlove(null);
-    updateLoadout({ gloveIndex: -1, glovePaint: -1, useRandom: true });
+    updateLoadout({
+      gloveIndexCt: -1, glovePaintCt: -1,
+      gloveIndexT: -1, glovePaintT: -1,
+      useRandom: true,
+    });
   };
+
+  // Find glove names for both teams
+  const getGloveName = (idx: number) => {
+    if (idx < 0 || idx >= gloves.length) return t("preview.random");
+    return gloves[idx].name;
+  };
+
+  const selectedCtName = getGloveName(loadout.gloveIndexCt);
+  const selectedTName = getGloveName(loadout.gloveIndexT);
 
   return (
     <div className="space-y-3">
+      {/* Team toggle */}
+      <div className="flex space-x-2">
+        <button
+          onClick={() => {
+            setSelectedTeam('ct');
+            setSelectedGlove(loadout.gloveIndexCt >= 0 ? loadout.gloveIndexCt : null);
+          }}
+          className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+            selectedTeam === 'ct' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+          }`}
+        >
+          {t("glove.ct")}
+        </button>
+        <button
+          onClick={() => {
+            setSelectedTeam('t');
+            setSelectedGlove(loadout.gloveIndexT >= 0 ? loadout.gloveIndexT : null);
+          }}
+          className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+            selectedTeam === 't' ? 'bg-orange-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+          }`}
+        >
+          {t("glove.t")}
+        </button>
+      </div>
+
+      {/* Current selections for both teams */}
+      <div className="flex space-x-2 text-xs">
+        <div className="flex-1 rounded-lg bg-gray-800/50 border border-gray-700 px-3 py-2">
+          <span className="text-blue-400 font-semibold">{t("glove.ct")}:</span>{' '}
+          <span className="text-gray-200">{selectedCtName}</span>
+        </div>
+        <div className="flex-1 rounded-lg bg-gray-800/50 border border-gray-700 px-3 py-2">
+          <span className="text-orange-400 font-semibold">{t("glove.t")}:</span>{' '}
+          <span className="text-gray-200">{selectedTName}</span>
+        </div>
+      </div>
+
       <button
         onClick={handleRandom}
         className={`
           card w-full text-center py-3 transition-all duration-200
-          ${loadout.gloveIndex === -1
+          ${loadout.gloveIndexCt === -1 && loadout.gloveIndexT === -1
             ? 'ring-2 ring-amber-500 border-amber-500 bg-amber-900/20'
             : 'hover:border-gray-500'
           }
@@ -103,7 +161,7 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
           <div className="mb-4 p-3 bg-gray-800 rounded-lg space-y-3">
             <div>
               <label className="text-xs text-gray-400 block mb-1">
-                {t("glove.wear")} ({wearLabels[wearValues.findIndex(v => Math.abs(v - wearValue) < 0.02)] || 'Custom'})
+                {t("glove.wear")} ({wearLabels[wearValues.findIndex(v => Math.abs(v - currentWear) < 0.02)] || 'Custom'})
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -111,11 +169,11 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
                   min="0"
                   max="1"
                   step="0.01"
-                  value={wearValue}
+                  value={currentWear}
                   onChange={(e) => handleWearChange(parseFloat(e.target.value))}
                   className="flex-1 h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
                 />
-                <span className="text-xs text-gray-300 w-12 text-right">{wearValue.toFixed(2)}</span>
+                <span className="text-xs text-gray-300 w-12 text-right">{currentWear.toFixed(2)}</span>
               </div>
               <div className="flex justify-between mt-1">
                 {wearValues.map((v, i) => (
@@ -123,7 +181,7 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
                     key={i}
                     onClick={() => handleWearChange(v)}
                     className={`text-[10px] px-1.5 py-0.5 rounded transition-all ${
-                      Math.abs(wearValue - v) < 0.02
+                      Math.abs(currentWear - v) < 0.02
                         ? 'bg-amber-600 text-white'
                         : 'text-gray-500 hover:text-gray-300'
                     }`}
@@ -144,11 +202,11 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
                   min="0"
                   max="1000"
                   step="1"
-                  value={seedValue}
+                  value={currentSeed}
                   onChange={(e) => handleSeedChange(parseInt(e.target.value))}
                   className="flex-1 h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
                 />
-                <span className="text-xs text-gray-300 w-10 text-right">{seedValue}</span>
+                <span className="text-xs text-gray-300 w-10 text-right">{currentSeed}</span>
               </div>
             </div>
           </div>
@@ -159,7 +217,7 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
                 key={paint.id}
                 onClick={() => handlePaintSelect(paint.id)}
                 className={`flex flex-col items-center p-2 rounded-md text-xs font-medium transition-all duration-200 ${
-                  loadout.glovePaint === paint.id
+                  currentPaint === paint.id
                     ? 'bg-amber-600 text-white ring-1 ring-amber-400'
                     : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}

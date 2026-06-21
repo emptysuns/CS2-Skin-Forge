@@ -19,7 +19,7 @@ namespace PlayerSkinMod;
 public class PlayerSkinModPlugin : BasePlugin
 {
     public override string ModuleName        => "PlayerSkinMod";
-    public override string ModuleVersion     => "1.3.6";
+    public override string ModuleVersion     => "1.4.0";
     public override string ModuleAuthor      => "CS2-Skin-local-mod";
     public override string ModuleDescription => "Allow players to customize weapon skins, knives, gloves, agent models, music kits locally";
 
@@ -144,8 +144,8 @@ public class PlayerSkinModPlugin : BasePlugin
         player.PrintToChat($" \x04[PlayerSkinMod]\x01 Loadout file: {_loadoutFilePath}");
         player.PrintToChat($" \x04[PlayerSkinMod]\x01 File exists: {File.Exists(_loadoutFilePath)}");
         player.PrintToChat($" \x04[PlayerSkinMod]\x01 Loaded loadouts: {_playerLoadouts.Count}");
-        player.PrintToChat($" \x04[PlayerSkinMod]\x01 Knife: {loadout.KnifeIndex}, Glove: {loadout.GloveIndex}, AgentCT: {loadout.AgentModelCt}, AgentT: {loadout.AgentModelT}");
-        player.PrintToChat($" \x04[PlayerSkinMod]\x01 UseRandom: {loadout.UseRandom}, Weapons: {loadout.WeaponPaints.Count}");
+        player.PrintToChat($" \x04[PlayerSkinMod]\x01 Knife: {loadout.KnifeIndex}, GloveCT: {loadout.GloveIndexCt}, GloveT: {loadout.GloveIndexT}, AgentCT: {loadout.AgentModelCt}, AgentT: {loadout.AgentModelT}");
+        player.PrintToChat($" \x04[PlayerSkinMod]\x01 UseRandom: {loadout.UseRandom}, Weapons: {loadout.WeaponPaints.Count}, Keychains: {loadout.WeaponKeychains.Count}");
         player.PrintToChat($" \x04[PlayerSkinMod]\x01 SetAttrByName: {_setAttrByName != null}");
         player.PrintToChat(" \x04[PlayerSkinMod]\x01 --- End Diagnostic ---");
         player.PrintToChat(" \x04[PlayerSkinMod]\x10 Respawn to apply skins.");
@@ -195,13 +195,15 @@ public class PlayerSkinModPlugin : BasePlugin
             return HookResult.Continue;
 
         var loadout = GetOrCreateLoadout(player.Slot);
-        Logger.LogInformation($"[PlayerSkinMod] Player {player.Slot} spawned. Loadout: knife={loadout.KnifeIndex}, glove={loadout.GloveIndex}, agentCT={loadout.AgentModelCt}, agentT={loadout.AgentModelT}, music={loadout.MusicKit}, random={loadout.UseRandom}, weapons={loadout.WeaponPaints.Count}, setAttrByName={_setAttrByName != null}");
+        Logger.LogInformation($"[PlayerSkinMod] Player {player.Slot} spawned. Loadout: knife={loadout.KnifeIndex}, gloveCT={loadout.GloveIndexCt}, gloveT={loadout.GloveIndexT}, agentCT={loadout.AgentModelCt}, agentT={loadout.AgentModelT}, music={loadout.MusicKit}, random={loadout.UseRandom}, weapons={loadout.WeaponPaints.Count}, setAttrByName={_setAttrByName != null}");
+
+        bool isCT = (CsTeam)player.TeamNum == CsTeam.CounterTerrorist;
 
         if (!_playerModels.TryGetValue(player.Slot, out string? model))
         {
             string[] pool;
             int agentIdx;
-            if ((CsTeam)player.TeamNum == CsTeam.CounterTerrorist)
+            if (isCT)
             {
                 pool = StaticData.CtModels;
                 agentIdx = loadout.AgentModelCt;
@@ -220,9 +222,26 @@ public class PlayerSkinModPlugin : BasePlugin
         int knifeIdx = loadout.KnifeIndex >= 0 ? Math.Min(loadout.KnifeIndex, StaticData.Knives.Length - 1) : _rng.Next(StaticData.Knives.Length);
         int knifePaint = loadout.KnifePaint >= 0 ? loadout.KnifePaint : StaticData.KnifePaints[_rng.Next(StaticData.KnifePaints.Length)];
 
-        int gloveIdx = loadout.GloveIndex >= 0 ? Math.Min(loadout.GloveIndex, StaticData.Gloves.Length - 1) : _rng.Next(StaticData.Gloves.Length);
-        var glove = StaticData.Gloves[gloveIdx];
-        int glovePaint = loadout.GlovePaint >= 0 ? loadout.GlovePaint : glove.PaintKit;
+        // Use per-team glove configuration
+        int gloveIdx, glovePaint;
+        int gloveSeed;
+        float gloveWear;
+        if (isCT)
+        {
+            gloveIdx = loadout.GloveIndexCt >= 0 ? Math.Min(loadout.GloveIndexCt, StaticData.Gloves.Length - 1) : _rng.Next(StaticData.Gloves.Length);
+            var glove = StaticData.Gloves[gloveIdx];
+            glovePaint = loadout.GlovePaintCt >= 0 ? loadout.GlovePaintCt : glove.PaintKit;
+            gloveSeed = loadout.GloveSeedCt;
+            gloveWear = loadout.GloveWearCt;
+        }
+        else
+        {
+            gloveIdx = loadout.GloveIndexT >= 0 ? Math.Min(loadout.GloveIndexT, StaticData.Gloves.Length - 1) : _rng.Next(StaticData.Gloves.Length);
+            var glove = StaticData.Gloves[gloveIdx];
+            glovePaint = loadout.GlovePaintT >= 0 ? loadout.GlovePaintT : glove.PaintKit;
+            gloveSeed = loadout.GloveSeedT;
+            gloveWear = loadout.GloveWearT;
+        }
 
         var pawn = player.PlayerPawn.Value;
         var assignedModel = model;
@@ -244,15 +263,15 @@ public class PlayerSkinModPlugin : BasePlugin
             player.MusicKitID = kitId;
             Utilities.SetStateChanged(player, "CCSPlayerController", "m_iMusicKitID");
 
-            ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, glove.DefIndex, glovePaint);
-            AddTimer(0.10f, () => ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, glove.DefIndex, glovePaint));
-            AddTimer(0.25f, () => ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, glove.DefIndex, glovePaint));
+            ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, glove.DefIndex, glovePaint, gloveSeed, gloveWear);
+            AddTimer(0.10f, () => ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, glove.DefIndex, glovePaint, gloveSeed, gloveWear));
+            AddTimer(0.25f, () => ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, glove.DefIndex, glovePaint, gloveSeed, gloveWear));
         });
 
         return HookResult.Continue;
     }
 
-    private void ApplyWearables(CCSPlayerController player, CCSPlayerPawn pawn, ushort knifeDefIndex, int knifePaintKit, PlayerLoadout loadout, ushort gloveDefIndex, int glovePaintKit)
+    private void ApplyWearables(CCSPlayerController player, CCSPlayerPawn pawn, ushort knifeDefIndex, int knifePaintKit, PlayerLoadout loadout, ushort gloveDefIndex, int glovePaintKit, int gloveSeed, float gloveWear)
     {
         if (player == null || !player.IsValid || pawn == null || !pawn.IsValid)
             return;
@@ -264,8 +283,6 @@ public class PlayerSkinModPlugin : BasePlugin
         float knifeWear = loadout.KnifeWear;
 
         WeaponService.ReplaceKnife(pawn, knifeDefIndex, knifePaintKit, _legacyPaints, _setAttrByName, knifeSeed, knifeWear);
-        int gloveSeed = loadout.GloveSeed;
-        float gloveWear = loadout.GloveWear;
         WeaponService.ApplyGloves(player, pawn, gloveDefIndex, glovePaintKit, _setAttrByName, gloveSeed, gloveWear);
     }
 
@@ -344,14 +361,22 @@ public class PlayerSkinModPlugin : BasePlugin
         int seed = loadout.WeaponSeeds.TryGetValue(defIndex, out int s) ? s : 0;
         float wear = loadout.WeaponWears.TryGetValue(defIndex, out float w) ? w : 0.01f;
 
-        ApplySkinToWeaponInternal(weapon, defIndex, paint, seed, wear, steamId);
+        // Get nametag and stattrak if configured
+        string? nametag = loadout.WeaponNametags.TryGetValue(defIndex, out string? nt) ? nt : null;
+        StatTrakInfo? statTrak = loadout.WeaponStatTrak.TryGetValue(defIndex, out StatTrakInfo? st) ? st : null;
+
+        ApplySkinToWeaponInternal(weapon, defIndex, paint, seed, wear, steamId, nametag, statTrak);
 
         // Apply stickers if configured
         if (loadout.WeaponStickers.TryGetValue(defIndex, out var stickers) && stickers.Count > 0)
             ApplyStickersInternal(weapon, stickers);
+
+        // Apply keychain if configured
+        if (loadout.WeaponKeychains.TryGetValue(defIndex, out var keychain))
+            ApplyKeychainInternal(weapon, keychain);
     }
 
-    private void ApplySkinToWeaponInternal(CEconEntity weapon, ushort defIndex, int paintKit, int seed = 0, float wear = 0.01f, ulong steamId = 0)
+    private void ApplySkinToWeaponInternal(CEconEntity weapon, ushort defIndex, int paintKit, int seed = 0, float wear = 0.01f, ulong steamId = 0, string? nametag = null, StatTrakInfo? statTrak = null)
     {
         if (_setAttrByName == null) return;
 
@@ -376,6 +401,25 @@ public class PlayerSkinModPlugin : BasePlugin
             _setAttrByName.Invoke(item.AttributeList.Handle, "set item texture prefab", paintKit);
             _setAttrByName.Invoke(item.AttributeList.Handle, "set item texture seed", (float)seed);
             _setAttrByName.Invoke(item.AttributeList.Handle, "set item texture wear", wear);
+
+            // Apply nametag
+            if (!string.IsNullOrEmpty(nametag))
+            {
+                item.CustomName = nametag;
+            }
+
+            // Apply StatTrak
+            if (statTrak != null && statTrak.Enabled)
+            {
+                item.EntityQuality = 9; // StatTrak quality
+                _setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "kill eater", 80);
+                _setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "kill eater score type", 0);
+                _setAttrByName.Invoke(item.AttributeList.Handle, "kill eater", 80);
+                _setAttrByName.Invoke(item.AttributeList.Handle, "kill eater score type", 0);
+                // Set StatTrak count via attribute
+                _setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "kill eater user 1", (float)statTrak.Count);
+                _setAttrByName.Invoke(item.AttributeList.Handle, "kill eater user 1", (float)statTrak.Count);
+            }
 
             Utilities.SetStateChanged(weapon, "CEconEntity", "m_AttributeManager");
 
@@ -413,6 +457,21 @@ public class PlayerSkinModPlugin : BasePlugin
             _setAttrByName.Invoke(handle, $"sticker slot {i} scale", s.Scale);
             _setAttrByName.Invoke(handle, $"sticker slot {i} rotation", s.Rotation);
         }
+    }
+
+    private void ApplyKeychainInternal(CBasePlayerWeapon weapon, KeychainInfo keychain)
+    {
+        if (_setAttrByName == null || keychain.Id == 0) return;
+        var item = weapon.AttributeManager?.Item;
+        if (item == null) return;
+
+        var handle = item.NetworkedDynamicAttributes.Handle;
+        _setAttrByName.Invoke(handle, "keychain slot 0 id", UIntToFloat(keychain.Id));
+        _setAttrByName.Invoke(handle, "keychain slot 0 offset x", keychain.OffsetX);
+        _setAttrByName.Invoke(handle, "keychain slot 0 offset y", keychain.OffsetY);
+        _setAttrByName.Invoke(handle, "keychain slot 0 offset z", keychain.OffsetZ);
+        if (keychain.Seed > 0)
+            _setAttrByName.Invoke(handle, "keychain slot 0 seed", (float)keychain.Seed);
     }
 
     private static float UIntToFloat(uint value) => BitConverter.Int32BitsToSingle((int)value);
