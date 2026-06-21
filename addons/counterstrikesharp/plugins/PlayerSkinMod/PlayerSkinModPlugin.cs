@@ -19,7 +19,7 @@ namespace PlayerSkinMod;
 public class PlayerSkinModPlugin : BasePlugin
 {
     public override string ModuleName        => "PlayerSkinMod";
-    public override string ModuleVersion     => "1.5.4";
+    public override string ModuleVersion     => "1.5.5";
     public override string ModuleAuthor      => "CS2-Skin-local-mod";
     public override string ModuleDescription => "Allow players to customize weapon skins, knives, gloves, agent models, music kits locally";
 
@@ -317,10 +317,10 @@ public class PlayerSkinModPlugin : BasePlugin
 
             // Apply knife + gloves via deferred wearables.
             // Knife is applied on both passes (immediate + 0.10f) for reliability.
-            // Gloves are applied ONLY on the first pass because the refresh uses
-            // "lastinv" which is a toggle — calling it twice cancels the effect.
+            // Gloves are also applied on both passes — the second call is a safety net
+            // in case the first call hit a timing issue (model not fully loaded, etc.).
             ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, gloveDefIndex, glovePaint, gloveSeed, gloveWear, applyGloves: true);
-            AddTimer(0.10f, () => { if (pawn != null && pawn.IsValid) ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, gloveDefIndex, glovePaint, gloveSeed, gloveWear, applyGloves: false); });
+            AddTimer(0.10f, () => { if (pawn != null && pawn.IsValid) ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, gloveDefIndex, glovePaint, gloveSeed, gloveWear, applyGloves: true); });
         });
 
         return HookResult.Continue;

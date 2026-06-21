@@ -48,7 +48,14 @@ export default function GlovePanel({ loadout, updateLoadout }: GlovePanelProps) 
   };
 
   const handlePaintSelect = (paintId: number) => {
-    updateLoadout({ [getPaintField()]: paintId, useRandom: false } as any);
+    const glove = gloves[selectedGlove!];
+    updateLoadout({
+      [getPaintField()]: paintId,
+      ...(selectedTeam === 'ct'
+        ? { gloveDefIndexCt: glove.defindex }
+        : { gloveDefIndexT: glove.defindex }),
+      useRandom: false,
+    } as any);
   };
 
   const handleWearChange = (wear: number) => {

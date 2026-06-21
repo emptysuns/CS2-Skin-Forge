@@ -97,6 +97,15 @@ public static class LoadoutService
                         loadout.GlovePaintT = oldGlovePaintEl.GetInt32();
                     }
                 }
+                // Backward compat: old singular gloveDefIndex (pre-v1.4.0 panels)
+                if (loadout.GloveDefIndexCt == 0 && loadout.GloveDefIndexT == 0)
+                {
+                    if (loadoutEl.TryGetProperty("gloveDefIndex", out var oldGloveDefIdxEl) && oldGloveDefIdxEl.GetUInt16() > 0)
+                    {
+                        loadout.GloveDefIndexCt = oldGloveDefIdxEl.GetUInt16();
+                        loadout.GloveDefIndexT = oldGloveDefIdxEl.GetUInt16();
+                    }
+                }
                 // For wear/seed backward compat, only apply if old fields exist and new ones are default
                 if (loadoutEl.TryGetProperty("gloveWear", out var oldGloveWearEl))
                 {

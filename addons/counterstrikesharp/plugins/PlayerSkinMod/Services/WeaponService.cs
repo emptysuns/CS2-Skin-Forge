@@ -198,11 +198,11 @@ public static class WeaponService
 
     /// <summary>
     /// Apply gloves to a player pawn.
-    /// Uses the same approach as CS2-Bot-Improver ApplyGloves (confirmed working):
     ///   1. Clear stale attributes
-    ///   2. Set defindex + skin attributes on both lists
-    ///   3. Mark Initialized = true
-    ///   4. Bodygroup toggle 0 -> 1 (with 0.2f delay) to force material refresh
+    ///   2. Set defindex + skin attributes on both attribute lists
+    ///   3. Notify engine via SetStateChanged (critical for rendering)
+    ///   4. Mark Initialized = true
+    ///   5. Bodygroup toggle 0 -> 1 (with 0.2f delay) to force material refresh
     /// Note: "lastinv" is intentionally NOT used — it can interfere with the
     /// glove model swap on certain team/model combinations.
     /// </summary>
@@ -219,6 +219,11 @@ public static class WeaponService
         try
         {
             var item = pawn.EconGloves;
+            if (item == null)
+            {
+                Server.PrintToConsole(player, $"[PlayerSkinMod] EconGloves is null for {player.PlayerName}");
+                return;
+            }
 
             // Clear stale attributes from previous glove type
             item.NetworkedDynamicAttributes.Attributes.RemoveAll();
@@ -236,6 +241,10 @@ public static class WeaponService
             setAttrByName.Invoke(item.AttributeList.Handle, "set item texture prefab", paintKit);
             setAttrByName.Invoke(item.AttributeList.Handle, "set item texture seed", (float)seed);
             setAttrByName.Invoke(item.AttributeList.Handle, "set item texture wear", wear);
+
+            // Notify engine that attributes changed (missing from earlier versions — likely
+            // the root cause of T-side gloves rendering with default textures)
+            Utilities.SetStateChanged(pawn, "CBaseModelEntity", "m_CBodyComponent");
 
             item.Initialized = true;
 
@@ -261,6 +270,7 @@ public static class WeaponService
         }
         catch (Exception ex)
         {
+            Server.PrintToConsole(player, $"[PlayerSkinMod] ApplyGloves error: {ex.Message}");
         }
     }
 
