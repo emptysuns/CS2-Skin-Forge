@@ -285,10 +285,15 @@ fn deploy_addons() -> Result<String, String> {
     let mut skipped = Vec::new();
 
     for file in &files_to_deploy {
-        // Try nested resource path first, then exe directory
+        // Try multiple possible resource locations
         let src = if resource_subdir.join(file).exists() {
+            // Tauri preserved nested path: resources/addons/.../PlayerSkinMod/
             resource_subdir.join(file)
+        } else if exe_dir.join("resources").join(file).exists() {
+            // Tauri flattened: resources/PlayerSkinMod.dll
+            exe_dir.join("resources").join(file)
         } else {
+            // Next to exe itself
             exe_dir.join(file)
         };
 
@@ -320,6 +325,13 @@ fn deploy_addons() -> Result<String, String> {
     );
     if !skipped.is_empty() {
         result.push_str(&format!(" | Skipped (not found): [{}]", skipped.join(", ")));
+        // Add diagnostic info about where we looked
+        result.push_str(&format!(
+            " | Searched: {}, {}, {}",
+            resource_subdir.display(),
+            exe_dir.join("resources").display(),
+            exe_dir.display()
+        ));
     }
     Ok(result)
 }

@@ -215,60 +215,38 @@ public static class WeaponService
             item.NetworkedDynamicAttributes.Attributes.RemoveAll();
             item.AttributeList.Attributes.RemoveAll();
 
-            // Force glove model refresh before applying (prevents model overlap)
-            player.ExecuteClientCommand("lastinv");
+            // Set glove identity
+            item.ItemDefinitionIndex = defIndex;
+            AssignItemId(item);
 
-            // Use 0.08s timer like WeaponPaints (not Server.NextFrame)
-            void ApplyGloveAttributes()
-            {
-                if (!player.IsValid || !pawn.IsValid) return;
+            // Apply skin attributes on BOTH lists (critical for CS2 rendering)
+            setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture prefab", paintKit);
+            setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture seed", (float)seed);
+            setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture wear", wear);
 
-                item.ItemDefinitionIndex = defIndex;
-                AssignItemId(item);
-                item.AccountID = (uint)player.SteamID;
+            setAttrByName.Invoke(item.AttributeList.Handle, "set item texture prefab", paintKit);
+            setAttrByName.Invoke(item.AttributeList.Handle, "set item texture seed", (float)seed);
+            setAttrByName.Invoke(item.AttributeList.Handle, "set item texture wear", wear);
 
-                item.NetworkedDynamicAttributes.Attributes.RemoveAll();
-                item.AttributeList.Attributes.RemoveAll();
+            item.Initialized = true;
 
-                setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture prefab", paintKit);
-                setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture seed", (float)seed);
-                setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture wear", wear);
-
-                setAttrByName.Invoke(item.AttributeList.Handle, "set item texture prefab", paintKit);
-                setAttrByName.Invoke(item.AttributeList.Handle, "set item texture seed", (float)seed);
-                setAttrByName.Invoke(item.AttributeList.Handle, "set item texture wear", wear);
-
-                item.Initialized = true;
-
-                // Force glove model refresh after applying (prevents model overlap)
-                player.ExecuteClientCommand("lastinv");
-                pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,0");
-                // Show gloves again after 0.2s delay
-                if (addTimer != null)
-                {
-                    addTimer(0.2f, () =>
-                    {
-                        if (pawn.IsValid)
-                            pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
-                    });
-                }
-                else
-                {
-                    Server.NextFrame(() =>
-                    {
-                        if (pawn.IsValid)
-                            pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
-                    });
-                }
-            }
-
+            // Force glove model refresh via bodygroup toggle (NO lastinv — that causes conflicts)
+            pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,0");
             if (addTimer != null)
             {
-                addTimer(0.08f, ApplyGloveAttributes);
+                addTimer(0.2f, () =>
+                {
+                    if (pawn.IsValid)
+                        pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
+                });
             }
             else
             {
-                Server.NextFrame(ApplyGloveAttributes);
+                Server.NextFrame(() =>
+                {
+                    if (pawn.IsValid)
+                        pawn.AcceptInput("SetBodygroup", value: "first_or_third_person,1");
+                });
             }
         }
         catch (Exception ex)

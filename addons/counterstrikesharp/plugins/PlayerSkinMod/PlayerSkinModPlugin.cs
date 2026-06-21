@@ -19,7 +19,7 @@ namespace PlayerSkinMod;
 public class PlayerSkinModPlugin : BasePlugin
 {
     public override string ModuleName        => "PlayerSkinMod";
-    public override string ModuleVersion     => "1.4.2";
+    public override string ModuleVersion     => "1.4.3";
     public override string ModuleAuthor      => "CS2-Skin-local-mod";
     public override string ModuleDescription => "Allow players to customize weapon skins, knives, gloves, agent models, music kits locally";
 
@@ -291,6 +291,8 @@ public class PlayerSkinModPlugin : BasePlugin
             Utilities.SetStateChanged(player, "CCSPlayerController", "m_iMusicKitID");
 
             ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, gloveDefIndex, glovePaint, gloveSeed, gloveWear);
+            AddTimer(0.10f, () => ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, gloveDefIndex, glovePaint, gloveSeed, gloveWear));
+            AddTimer(0.25f, () => ApplyWearables(player, pawn, knife.DefIndex, knifePaint, loadout, gloveDefIndex, glovePaint, gloveSeed, gloveWear));
         });
 
         return HookResult.Continue;
