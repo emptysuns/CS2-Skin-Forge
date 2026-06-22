@@ -105,6 +105,17 @@ export const DICTS: Record<string, Partial18n> = {
     "common.error": "错误",
     "common.success": "成功",
     "common.close": "关闭",
+
+    // About
+    "about.title": "关于",
+    "about.description": "开源 CS2 皮肤修改工具。免费且仅本地运行。",
+    "about.github": "GitHub 仓库",
+    "about.openInBrowser": "在浏览器中打开",
+
+    // Setup reminder
+    "setup.title": "需要设置",
+    "setup.message": "尚未配置 CS2 安装路径。请在设置中配置以部署插件。",
+    "setup.openSettings": "打开设置",
   },
 
   tchinese: {
@@ -183,6 +194,14 @@ export const DICTS: Record<string, Partial18n> = {
     "common.error": "錯誤",
     "common.success": "成功",
     "common.close": "關閉",
+
+    "about.title": "關於",
+    "about.description": "開源 CS2 皮膚修改工具。免費且僅本地運行。",
+    "about.github": "GitHub 倉庫",
+    "about.openInBrowser": "在瀏覽器中打開",
+    "setup.title": "需要設置",
+    "setup.message": "尚未配置 CS2 安裝路徑。請在設置中配置以部署插件。",
+    "setup.openSettings": "打開設置",
   },
 
   japanese: {
@@ -261,6 +280,14 @@ export const DICTS: Record<string, Partial18n> = {
     "common.error": "エラー",
     "common.success": "成功",
     "common.close": "閉じる",
+
+    "about.title": "について",
+    "about.description": "オープンソースのCS2スキンカスタマイズツール。無料でローカル専用。",
+    "about.github": "GitHub リポジトリ",
+    "about.openInBrowser": "ブラウザで開く",
+    "setup.title": "セットアップが必要",
+    "setup.message": "CS2インストールパスが設定されていません。設定でプラグインをデプロイしてください。",
+    "setup.openSettings": "設定を開く",
   },
 
   koreana: {
@@ -335,5 +362,13 @@ export const DICTS: Record<string, Partial18n> = {
     "common.error": "오류",
     "common.success": "성공",
     "common.close": "닫기",
+
+    "about.title": "정보",
+    "about.description": "오픈소스 CS2 스킨 커스터마이징 도구. 무료 및 로컬 전용.",
+    "about.github": "GitHub 저장소",
+    "about.openInBrowser": "브라우저에서 열기",
+    "setup.title": "설정 필요",
+    "setup.message": "CS2 설치 경로가 구성되지 않았습니다. 설정에서 플러그인을 배포하세요.",
+    "setup.openSettings": "설정 열기",
   },
 };

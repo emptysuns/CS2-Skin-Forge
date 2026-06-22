@@ -98,6 +98,17 @@ export const EN = {
   "common.error": "Error",
   "common.success": "Success",
   "common.close": "Close",
+
+  // About
+  "about.title": "About",
+  "about.description": "Open-source CS2 skin customization tool. Free and local-only.",
+  "about.github": "GitHub Repository",
+  "about.openInBrowser": "Open in Browser",
+
+  // Setup reminder
+  "setup.title": "Setup Required",
+  "setup.message": "CS2 installation path not configured. Please set it in Settings to deploy the plugin.",
+  "setup.openSettings": "Open Settings",
 } as const;
 
 export type I18nKey = keyof typeof EN;

@@ -9,6 +9,7 @@ import MusicKitPanel from './components/MusicKitPanel';
 import PreviewPanel from './components/PreviewPanel';
 import StatusBar from './components/StatusBar';
 import SettingsPanel from './components/SettingsPanel';
+import AboutDialog from './components/AboutDialog';
 import DisclaimerDialog from './components/DisclaimerDialog';
 import { Loadout } from './utils/types';
 import { useT } from './i18n';
@@ -48,6 +49,7 @@ function App() {
   const { t } = useT();
   const [activeTab, setActiveTab] = useState('weapons');
   const [showSettings, setShowSettings] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const [_config, setConfig] = useState<AppConfig | null>(null);
   const [loadout, setLoadout] = useState<Loadout>({ ...defaultLoadout });
 
@@ -59,6 +61,10 @@ function App() {
       try {
         const cfg = await api.getConfig();
         setConfig(cfg);
+        // If CS2 path is not configured, auto-open settings as a setup reminder
+        if (!cfg.cs2Path) {
+          setShowSettings(true);
+        }
         // Try to load saved loadout for slot 0 (local player)
         const saved = await api.loadLoadout(0);
         if (saved) {
@@ -112,7 +118,7 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" data-tauri-drag-region>
-      <Header onSettingsClick={() => setShowSettings(true)} />
+      <Header onSettingsClick={() => setShowSettings(true)} onAboutClick={() => setShowAbout(true)} />
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-4 overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-full">
@@ -151,6 +157,10 @@ function App() {
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         onConfigSaved={setConfig}
+      />
+      <AboutDialog
+        isOpen={showAbout}
+        onClose={() => setShowAbout(false)}
       />
       <DisclaimerDialog />
     </div>

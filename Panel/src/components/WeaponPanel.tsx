@@ -5,6 +5,7 @@ import { weaponPaints } from '../data/skins';
 import { allStickers, getStickerImageUrl } from '../data/stickers';
 import { allKeychains, getKeychainImageUrl, type KeychainData } from '../data/keychains';
 import { getWeaponDefaultImage } from '../data/weaponImages';
+import { skinNamesEn } from '../data/skinNamesEn';
 import { useT } from '../i18n';
 
 interface WeaponPanelProps {
@@ -24,6 +25,11 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
 
   const filteredWeapons = getWeaponsByCategory(selectedCategory);
   const isChinese = lang === 'schinese' || lang === 'tchinese';
+
+  const getPaintName = (defindex: number, paintId: number, fallbackName: string): string => {
+    if (isChinese) return fallbackName;
+    return skinNamesEn[defindex]?.[paintId] || fallbackName;
+  };
 
   const translateStickerName = (name: string): string => {
     if (!isChinese) return name;
@@ -254,7 +260,7 @@ export default function WeaponPanel({ loadout, updateLoadout }: WeaponPanelProps
                     className="w-full h-12 object-contain mb-1"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 )}
-                <span className="truncate w-full text-center">{paint.name}</span>
+                <span className="truncate w-full text-center">{getPaintName(selectedWeapon, paint.id, paint.name)}</span>
               </button>
             ))}
           </div>
