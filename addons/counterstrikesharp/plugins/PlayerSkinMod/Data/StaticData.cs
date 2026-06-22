@@ -8,6 +8,15 @@ public static class StaticData
         409, 413, 414, 415, 418, 420, 421, 568, 569, 570, 571, 572
     };
 
+    /// <summary>
+    /// Unique glove type DefIndices in panel display order (index matches panel's gloves[] array).
+    /// Used for fallback when gloveDefIndex is not set in the loadout (pre-v1.5.6 configs).
+    /// </summary>
+    public static readonly ushort[] GloveTypes =
+    {
+        5027, 5030, 5031, 5032, 5033, 5034, 5035, 4725
+    };
+
     public static readonly (ushort DefIndex, int PaintKit)[] Gloves =
     {
         (5027, 10006), (5027, 10007), (5027, 10008), (5027, 10039),

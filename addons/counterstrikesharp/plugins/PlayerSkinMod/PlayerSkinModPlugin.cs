@@ -272,8 +272,9 @@ public class PlayerSkinModPlugin : BasePlugin
             }
             else
             {
-                int gloveIdx = loadout.GloveIndexCt >= 0 ? Math.Min(loadout.GloveIndexCt, StaticData.Gloves.Length - 1) : _rng.Next(StaticData.Gloves.Length);
-                gloveDefIndex = StaticData.Gloves[gloveIdx].DefIndex;
+                // GloveIndex maps to panel's glove TYPE array (0=Bloodhound, 1=Sport, etc.)
+                int gloveIdx = loadout.GloveIndexCt >= 0 ? Math.Min(loadout.GloveIndexCt, StaticData.GloveTypes.Length - 1) : _rng.Next(StaticData.GloveTypes.Length);
+                gloveDefIndex = StaticData.GloveTypes[gloveIdx];
             }
             glovePaint = loadout.GlovePaintCt >= 0 ? loadout.GlovePaintCt : StaticData.Gloves[0].PaintKit;
             gloveSeed = loadout.GloveSeedCt;
@@ -287,8 +288,9 @@ public class PlayerSkinModPlugin : BasePlugin
             }
             else
             {
-                int gloveIdx = loadout.GloveIndexT >= 0 ? Math.Min(loadout.GloveIndexT, StaticData.Gloves.Length - 1) : _rng.Next(StaticData.Gloves.Length);
-                gloveDefIndex = StaticData.Gloves[gloveIdx].DefIndex;
+                // GloveIndex maps to panel's glove TYPE array (0=Bloodhound, 1=Sport, etc.)
+                int gloveIdx = loadout.GloveIndexT >= 0 ? Math.Min(loadout.GloveIndexT, StaticData.GloveTypes.Length - 1) : _rng.Next(StaticData.GloveTypes.Length);
+                gloveDefIndex = StaticData.GloveTypes[gloveIdx];
             }
             glovePaint = loadout.GlovePaintT >= 0 ? loadout.GlovePaintT : StaticData.Gloves[0].PaintKit;
             gloveSeed = loadout.GloveSeedT;
