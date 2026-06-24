@@ -133,7 +133,14 @@ public static class WeaponService
         }
     }
 
+    /// <summary>
+    /// Replace the player's knife with the specified knife type and skin.
+    /// When the knife type changes (e.g. Butterfly → Talon), the old entity is
+    /// destroyed and a fresh one is created so the engine picks up the correct
+    /// AnimGraph / VData for the new knife family.
+    /// </summary>
     public static void ReplaceKnife(
+        CCSPlayerController player,
         CCSPlayerPawn pawn,
         ushort defIndex,
         int paintKit,
@@ -146,6 +153,9 @@ public static class WeaponService
         {
             var weapons = pawn.WeaponServices?.MyWeapons;
             if (weapons == null) return;
+
+            // ── Find the current knife ──────────────────────────────────
+            CBasePlayerWeapon? knife = null;
             foreach (var handle in weapons)
             {
                 var w = handle.Value;
@@ -153,47 +163,120 @@ public static class WeaponService
                 var name = w.DesignerName;
                 if (string.IsNullOrEmpty(name)) continue;
                 if (name != "weapon_knife" && name != "weapon_knife_t") continue;
-
-                w.AcceptInput("ChangeSubclass", value: defIndex.ToString());
-
-                var item = w.AttributeManager?.Item;
-                if (item == null) break;
-
-                item.ItemDefinitionIndex = defIndex;
-                item.EntityQuality = 3;
-
-                item.AttributeList.Attributes.RemoveAll();
-                item.NetworkedDynamicAttributes.Attributes.RemoveAll();
-
-                AssignItemId(item);
-
-                if (paintKit > 0)
-                {
-                    w.FallbackPaintKit = paintKit;
-                    w.FallbackSeed = knifeSeed;
-                    w.FallbackWear = knifeWear;
-
-                    setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture prefab", paintKit);
-                    setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture seed", (float)knifeSeed);
-                    setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture wear", knifeWear);
-
-                    setAttrByName.Invoke(item.AttributeList.Handle, "set item texture prefab", paintKit);
-                    setAttrByName.Invoke(item.AttributeList.Handle, "set item texture seed", (float)knifeSeed);
-                    setAttrByName.Invoke(item.AttributeList.Handle, "set item texture wear", knifeWear);
-                }
-
-                Utilities.SetStateChanged(w, "CEconEntity", "m_AttributeManager");
-
-                // Handle legacy bodygroup for knife skins
-                bool isLegacy = legacyPaints.Contains((defIndex, paintKit));
-                w.AcceptInput("SetBodygroup", value: $"body,{(isLegacy ? 1 : 0)}");
-                Utilities.SetStateChanged(w, "CBaseModelEntity", "m_CBodyComponent");
+                knife = w;
                 break;
             }
+
+            if (knife == null) return;
+
+            var item = knife.AttributeManager?.Item;
+            if (item == null) return;
+
+            ushort currentDefIndex = item.ItemDefinitionIndex;
+
+            // ── Knife TYPE changed → destroy & recreate ─────────────────
+            // Different knife families (Butterfly / Talon / Karambit …)
+            // use incompatible AnimGraph2 + VData.  Patching the existing
+            // entity with ChangeSubclass alone leaves the old animation
+            // bindings in place, causing hand / pose glitches.
+            if (currentDefIndex != defIndex)
+            {
+                // Schedule old entity for destruction (small delay so the
+                // engine has time to detach it from the player's inventory).
+                knife.AddEntityIOEvent("Kill", knife, null, "", 0.05f);
+
+                // Give a fresh default knife – the engine creates it with
+                // the correct base VData for the current team.
+                player.GiveNamedItem("weapon_knife");
+
+                // On the next tick the new knife is fully initialised.
+                // Patch it to the desired subclass + skin, then force the
+                // client to re-select the knife slot so the view-model
+                // reloads the matching animation set.
+                Server.NextFrame(() =>
+                {
+                    if (pawn == null || !pawn.IsValid) return;
+
+                    var newWeapons = pawn.WeaponServices?.MyWeapons;
+                    if (newWeapons == null) return;
+
+                    foreach (var nh in newWeapons)
+                    {
+                        var w = nh.Value;
+                        if (w == null || !w.IsValid) continue;
+                        var wname = w.DesignerName;
+                        if (string.IsNullOrEmpty(wname)) continue;
+                        if (wname != "weapon_knife" && wname != "weapon_knife_t") continue;
+
+                        ApplySkinToKnife(w, defIndex, paintKit, legacyPaints,
+                                         setAttrByName, knifeSeed, knifeWear);
+                        break;
+                    }
+
+                    // Force the client to switch to the knife slot –
+                    // this makes the engine rebuild the view-model with
+                    // the correct animation graph for the new subclass.
+                    if (player != null && player.IsValid)
+                        player.ExecuteClientCommand("slot3");
+                });
+
+                return;
+            }
+
+            // ── Same knife type → just refresh the skin ─────────────────
+            ApplySkinToKnife(knife, defIndex, paintKit, legacyPaints,
+                             setAttrByName, knifeSeed, knifeWear);
         }
         catch (Exception ex)
         {
         }
+    }
+
+    /// <summary>
+    /// Apply skin / quality / bodygroup to an existing knife entity.
+    /// </summary>
+    private static void ApplySkinToKnife(
+        CBasePlayerWeapon knife,
+        ushort defIndex,
+        int paintKit,
+        HashSet<(ushort DefIndex, int Paint)> legacyPaints,
+        MemoryFunctionVoid<nint, string, float> setAttrByName,
+        int knifeSeed,
+        float knifeWear)
+    {
+        knife.AcceptInput("ChangeSubclass", value: defIndex.ToString());
+
+        var item = knife.AttributeManager?.Item;
+        if (item == null) return;
+
+        item.ItemDefinitionIndex = defIndex;
+        item.EntityQuality = 3;
+
+        item.AttributeList.Attributes.RemoveAll();
+        item.NetworkedDynamicAttributes.Attributes.RemoveAll();
+
+        AssignItemId(item);
+
+        if (paintKit > 0)
+        {
+            knife.FallbackPaintKit = paintKit;
+            knife.FallbackSeed = knifeSeed;
+            knife.FallbackWear = knifeWear;
+
+            setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture prefab", paintKit);
+            setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture seed", (float)knifeSeed);
+            setAttrByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture wear", knifeWear);
+
+            setAttrByName.Invoke(item.AttributeList.Handle, "set item texture prefab", paintKit);
+            setAttrByName.Invoke(item.AttributeList.Handle, "set item texture seed", (float)knifeSeed);
+            setAttrByName.Invoke(item.AttributeList.Handle, "set item texture wear", knifeWear);
+        }
+
+        Utilities.SetStateChanged(knife, "CEconEntity", "m_AttributeManager");
+
+        bool isLegacy = legacyPaints.Contains((defIndex, paintKit));
+        knife.AcceptInput("SetBodygroup", value: $"body,{(isLegacy ? 1 : 0)}");
+        Utilities.SetStateChanged(knife, "CBaseModelEntity", "m_CBodyComponent");
     }
 
     /// <summary>
