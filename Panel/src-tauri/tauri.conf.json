@@ -26,7 +26,8 @@
     ],
     "windows": {
       "nsis": {
-        "installMode": "both"
+        "installMode": "both",
+        "resourcesDir": "resources"
       }
     },
     "linux": {
@@ -41,7 +42,7 @@
   "app": {
     "windows": [
       {
-        "title": "CS2 Skin Mod v1.5.6",
+        "title": "CS2 Skin Mod v1.5.7",
         "width": 1200,
         "height": 800,
         "resizable": true,

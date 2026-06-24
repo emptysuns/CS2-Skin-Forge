@@ -277,18 +277,10 @@ fn deploy_addons() -> Result<String, String> {
         .to_path_buf();
 
     // Possible resource locations (checked in priority order).
-    // Tauri MSI/dev builds: resources/addons/.../PlayerSkinMod/
+    // Tauri MSI / dev builds / NSIS with resourcesDir = "resources":
+    //   resources/addons/.../PlayerSkinMod/
     let resource_subdir = exe_dir
         .join("resources")
-        .join("addons")
-        .join("counterstrikesharp")
-        .join("plugins")
-        .join("PlayerSkinMod");
-
-    // Tauri v2 NSIS installer: _up_/_up_/addons/.../PlayerSkinMod/
-    let nsis_resource_subdir = exe_dir
-        .join("_up_")
-        .join("_up_")
         .join("addons")
         .join("counterstrikesharp")
         .join("plugins")
@@ -301,11 +293,8 @@ fn deploy_addons() -> Result<String, String> {
     for file in &files_to_deploy {
         // Try multiple possible resource locations (priority order)
         let src = if resource_subdir.join(file).exists() {
-            // Tauri dev/MSI: resources/addons/.../PlayerSkinMod/
+            // resources/addons/.../PlayerSkinMod/
             resource_subdir.join(file)
-        } else if nsis_resource_subdir.join(file).exists() {
-            // Tauri v2 NSIS: _up_/_up_/addons/.../PlayerSkinMod/
-            nsis_resource_subdir.join(file)
         } else if exe_dir.join("resources").join(file).exists() {
             // Tauri flattened: resources/PlayerSkinMod.dll
             exe_dir.join("resources").join(file)
