@@ -58,6 +58,14 @@ export interface AppConfig {
   cs2Path: string | null;
 }
 
+export interface PluginCheckResult {
+  allPresent: boolean;
+  missingFiles: string[];
+  versionMismatch: boolean;
+  deployedVersion: string | null;
+  panelVersion: string;
+}
+
 export const api = {
   getConfig: () => invoke<AppConfig>("get_config"),
   saveConfig: (config: AppConfig) => invoke<void>("save_config", { config }),
@@ -66,5 +74,6 @@ export const api = {
   loadLoadout: (slot: number) =>
     invoke<Loadout | null>("load_loadout", { slot }),
   detectCs2Path: () => invoke<string | null>("detect_cs2_path"),
+  checkPluginFiles: () => invoke<PluginCheckResult>("check_plugin_files"),
   deployAddons: () => invoke<string>("deploy_addons"),
 };

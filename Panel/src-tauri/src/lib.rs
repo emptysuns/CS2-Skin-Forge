@@ -120,6 +120,36 @@ pub struct AppConfig {
     pub cs2_path: Option<String>,
 }
 
+#[derive(Debug, Serialize)]
+pub struct PluginCheckResult {
+    pub all_present: bool,
+    pub missing_files: Vec<String>,
+    pub version_mismatch: bool,
+    pub deployed_version: Option<String>,
+    pub panel_version: String,
+}
+
+/// Read the CS2 path from config and return the PlayerSkinMod plugin directory.
+fn get_plugin_dir_from_config() -> Result<PathBuf, String> {
+    let config_path = get_config_path();
+    if !config_path.exists() {
+        return Err("CS2 path not configured. Please set it in Settings.".to_string());
+    }
+    let data = fs::read_to_string(&config_path).map_err(|e| e.to_string())?;
+    let config: AppConfig = serde_json::from_str(&data).map_err(|e| e.to_string())?;
+    let cs2_path = config
+        .cs2_path
+        .ok_or_else(|| "CS2 path not configured.".to_string())?;
+    Ok(PathBuf::from(&cs2_path)
+        .join("addons")
+        .join("counterstrikesharp")
+        .join("plugins")
+        .join("PlayerSkinMod"))
+}
+
+const PLUGIN_FILES: &[&str] = &["PlayerSkinMod.dll", "PlayerSkinMod.json", "skins_en.json"];
+const VERSION_FILE: &str = "plugin_version.txt";
+
 fn get_config_path() -> PathBuf {
     let mut path = dirs::config_dir().unwrap_or_else(|| PathBuf::from("."));
     path.push("CS2-Skin-Mod");
@@ -252,22 +282,56 @@ fn detect_cs2_path() -> Result<Option<String>, String> {
 }
 
 #[tauri::command]
-fn deploy_addons() -> Result<String, String> {
-    let config_path = get_config_path();
-    if !config_path.exists() {
-        return Err("CS2 path not configured. Please set it in Settings.".to_string());
-    }
-    let data = fs::read_to_string(&config_path).map_err(|e| e.to_string())?;
-    let config: AppConfig = serde_json::from_str(&data).map_err(|e| e.to_string())?;
-    let cs2_path = config
-        .cs2_path
-        .ok_or_else(|| "CS2 path not configured.".to_string())?;
+fn check_plugin_files() -> Result<PluginCheckResult, String> {
+    let panel_version = env!("CARGO_PKG_VERSION").to_string();
+    let plugin_dir = match get_plugin_dir_from_config() {
+        Ok(dir) => dir,
+        Err(_) => {
+            return Ok(PluginCheckResult {
+                all_present: false,
+                missing_files: PLUGIN_FILES.iter().map(|s| s.to_string()).collect(),
+                version_mismatch: false,
+                deployed_version: None,
+                panel_version,
+            });
+        }
+    };
 
-    let target_dir = PathBuf::from(&cs2_path)
-        .join("addons")
-        .join("counterstrikesharp")
-        .join("plugins")
-        .join("PlayerSkinMod");
+    // Check each required plugin file
+    let mut missing_files: Vec<String> = Vec::new();
+    for file in PLUGIN_FILES {
+        let path = plugin_dir.join(file);
+        if !path.exists() || fs::metadata(&path).map(|m| m.len()).unwrap_or(0) == 0 {
+            missing_files.push(file.to_string());
+        }
+    }
+
+    // Check version file
+    let version_path = plugin_dir.join(VERSION_FILE);
+    let deployed_version = if version_path.exists() {
+        fs::read_to_string(&version_path)
+            .ok()
+            .map(|s| s.trim().to_string())
+    } else {
+        None
+    };
+
+    let version_mismatch = deployed_version
+        .as_ref()
+        .map_or(false, |v| v != &panel_version);
+
+    Ok(PluginCheckResult {
+        all_present: missing_files.is_empty() && !version_mismatch,
+        missing_files,
+        version_mismatch,
+        deployed_version,
+        panel_version,
+    })
+}
+
+#[tauri::command]
+fn deploy_addons() -> Result<String, String> {
+    let target_dir = get_plugin_dir_from_config()?;
     fs::create_dir_all(&target_dir).map_err(|e| e.to_string())?;
 
     let exe_dir = std::env::current_exe()
@@ -280,8 +344,7 @@ fn deploy_addons() -> Result<String, String> {
     // Tauri NSIS installer bundles resources under _up_/_up_/resources/
     // Tauri MSI / dev builds use resources/
     let nsis_resource_dir = exe_dir
-        .join("_up_")
-        .join("_up_")
+        .join("data")
         .join("resources")
         .join("addons")
         .join("counterstrikesharp")
@@ -295,20 +358,17 @@ fn deploy_addons() -> Result<String, String> {
         .join("plugins")
         .join("PlayerSkinMod");
 
-    let files_to_deploy = ["PlayerSkinMod.dll", "PlayerSkinMod.json", "skins_en.json"];
     let mut deployed = Vec::new();
     let mut skipped = Vec::new();
+    let mut verify_failed = Vec::new();
 
-    for file in &files_to_deploy {
+    for file in PLUGIN_FILES {
         // Try multiple possible resource locations (priority order)
         let src = if nsis_resource_dir.join(file).exists() {
-            // NSIS: _up_/_up_/resources/addons/.../PlayerSkinMod/
             nsis_resource_dir.join(file)
         } else if resource_subdir.join(file).exists() {
-            // MSI / dev: resources/addons/.../PlayerSkinMod/
             resource_subdir.join(file)
         } else if exe_dir.join("resources").join(file).exists() {
-            // Tauri flattened: resources/PlayerSkinMod.dll
             exe_dir.join("resources").join(file)
         } else {
             // Next to exe itself
@@ -317,7 +377,6 @@ fn deploy_addons() -> Result<String, String> {
 
         if src.exists() {
             let dst = target_dir.join(file);
-            // Log file sizes to verify overwrite
             let src_size = fs::metadata(&src).map(|m| m.len()).unwrap_or(0);
             let dst_size = if dst.exists() {
                 fs::metadata(&dst).map(|m| m.len()).unwrap_or(0)
@@ -325,15 +384,37 @@ fn deploy_addons() -> Result<String, String> {
                 0
             };
             fs::copy(&src, &dst).map_err(|e| format!("Failed to copy {}: {}", file, e))?;
-            let msg = if dst.exists() && dst_size > 0 {
-                format!("{} ({}B -> {}B)", file, dst_size, src_size)
-            } else {
-                format!("{} ({}B, new)", file, src_size)
-            };
-            deployed.push(msg);
+
+            // Post-copy verification: ensure destination file exists and is not empty
+            match fs::metadata(&dst) {
+                Ok(meta) if meta.len() > 0 => {
+                    let msg = if dst_size > 0 {
+                        format!("{} ({}B -> {}B)", file, dst_size, src_size)
+                    } else {
+                        format!("{} ({}B, new)", file, src_size)
+                    };
+                    deployed.push(msg);
+                }
+                _ => {
+                    verify_failed.push(format!(
+                        "{} (copy succeeded but destination is missing/empty)",
+                        file
+                    ));
+                }
+            }
         } else {
             skipped.push(file.to_string());
         }
+    }
+
+    // Fail if nothing was deployed and no verify failures (true misdeploy)
+    if deployed.is_empty() && verify_failed.is_empty() {
+        return Err(format!(
+            "No plugin files found to deploy. Searched: {}, {}, {}",
+            nsis_resource_dir.display(),
+            resource_subdir.display(),
+            exe_dir.join("resources").display()
+        ));
     }
 
     let mut result = format!(
@@ -341,6 +422,10 @@ fn deploy_addons() -> Result<String, String> {
         deployed.join(", "),
         target_dir.display()
     );
+
+    if !verify_failed.is_empty() {
+        result.push_str(&format!(" | Verify-failed: [{}]", verify_failed.join(", ")));
+    }
     if !skipped.is_empty() {
         result.push_str(&format!(" | Skipped (not found): [{}]", skipped.join(", ")));
         result.push_str(&format!(
@@ -350,6 +435,14 @@ fn deploy_addons() -> Result<String, String> {
             exe_dir.join("resources").display()
         ));
     }
+
+    // Write version file so we can detect panel-plugin version mismatch
+    let version = env!("CARGO_PKG_VERSION");
+    let version_path = target_dir.join(VERSION_FILE);
+    fs::write(&version_path, version)
+        .map_err(|e| format!("Failed to write version file: {}", e))?;
+    result.push_str(&format!(" | Version: {}", version));
+
     Ok(result)
 }
 
@@ -366,6 +459,7 @@ pub fn run() {
             save_loadout,
             load_loadout,
             detect_cs2_path,
+            check_plugin_files,
             deploy_addons
         ])
         .run(tauri::generate_context!())

@@ -13,7 +13,7 @@ import AboutDialog from './components/AboutDialog';
 import DisclaimerDialog from './components/DisclaimerDialog';
 import { Loadout } from './utils/types';
 import { useT } from './i18n';
-import { api, type AppConfig } from './lib/api';
+import { api, type AppConfig, type PluginCheckResult } from './lib/api';
 
 const defaultLoadout: Loadout = {
   weaponPaints: {},
@@ -54,6 +54,9 @@ function App() {
   const [loadout, setLoadout] = useState<Loadout>({ ...defaultLoadout });
 
   const [status, setStatus] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [showPluginWarning, setShowPluginWarning] = useState(false);
+  const [pluginCheckResult, setPluginCheckResult] = useState<PluginCheckResult | null>(null);
+  const [pluginDismissed, setPluginDismissed] = useState(false);
 
   // Load config and saved loadout on mount
   useEffect(() => {
@@ -64,6 +67,17 @@ function App() {
         // If CS2 path is not configured, auto-open settings as a setup reminder
         if (!cfg.cs2Path) {
           setShowSettings(true);
+        } else {
+          // Check if plugin files are present and up-to-date
+          try {
+            const check = await api.checkPluginFiles();
+            setPluginCheckResult(check);
+            if (!check.allPresent || check.versionMismatch) {
+              setShowPluginWarning(true);
+            }
+          } catch (e) {
+            console.error("Plugin check failed:", e);
+          }
         }
         // Try to load saved loadout for slot 0 (local player)
         const saved = await api.loadLoadout(0);
@@ -97,6 +111,16 @@ function App() {
     setLoadout({ ...defaultLoadout });
     setStatus({ message: t("status.reset"), type: 'info' });
     setTimeout(() => setStatus(null), 3000);
+  };
+
+  const handleDeployFromWarning = () => {
+    setShowPluginWarning(false);
+    setShowSettings(true);
+  };
+
+  const handleDismissPluginWarning = () => {
+    setShowPluginWarning(false);
+    setPluginDismissed(true);
   };
 
   const renderPanel = () => {
@@ -163,6 +187,48 @@ function App() {
         onClose={() => setShowAbout(false)}
       />
       <DisclaimerDialog />
+
+      {/* Plugin Warning Dialog */}
+      {showPluginWarning && pluginCheckResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="card w-full max-w-md mx-4 space-y-4">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">⚠️</span>
+              <h2 className="text-xl font-bold text-white">{t("setup.pluginWarning")}</h2>
+            </div>
+            <p className="text-sm text-gray-300">
+              {pluginCheckResult.missingFiles.length > 0
+                ? t("status.pluginMissing")
+                : pluginCheckResult.versionMismatch
+                  ? t("status.pluginVersionMismatch")
+                  : t("setup.pluginWarningMessage")}
+            </p>
+            {pluginCheckResult.missingFiles.length > 0 && (
+              <div className="text-xs text-red-400 bg-red-900/20 rounded-lg p-2">
+                {t("setup.pluginWarningMessage")}
+                <ul className="list-disc list-inside mt-1">
+                  {pluginCheckResult.missingFiles.map(f => <li key={f}>{f}</li>)}
+                </ul>
+              </div>
+            )}
+            {pluginCheckResult.versionMismatch && (
+              <div className="text-xs text-yellow-400 bg-yellow-900/20 rounded-lg p-2">
+                {t("status.pluginVersionMismatch")}
+                <br />
+                Panel: v{pluginCheckResult.panelVersion} | Deployed: {pluginCheckResult.deployedVersion || t("common.error")}
+              </div>
+            )}
+            <div className="flex gap-3 pt-2">
+              <button onClick={handleDismissPluginWarning} className="btn-secondary flex-1">
+                {t("setup.remindLater")}
+              </button>
+              <button onClick={handleDeployFromWarning} className="btn-primary flex-1">
+                {t("setup.deployNow")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

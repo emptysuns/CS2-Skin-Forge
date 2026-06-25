@@ -53,8 +53,30 @@ export default function SettingsPanel({ isOpen, onClose, onConfigSaved }: Settin
     setDeploying(true);
     setDeployResult(null);
     try {
-      const result = await api.deployAddons();
-      setDeployResult({ success: true, message: result });
+      const deployMsg = await api.deployAddons();
+      // Post-deploy verification: check files are actually present
+      let verifyMsg = "";
+      let verifySuccess = true;
+      try {
+        const check = await api.checkPluginFiles();
+        if (!check.allPresent) {
+          verifySuccess = false;
+          verifyMsg = check.missingFiles.length > 0
+            ? t("status.deployVerifyFailed")
+            : check.versionMismatch
+              ? t("status.pluginVersionMismatch")
+              : t("status.deployError");
+        } else {
+          verifyMsg = t("status.pluginAllGood");
+        }
+      } catch {
+        verifyMsg = t("status.deployError");
+        verifySuccess = false;
+      }
+      setDeployResult({
+        success: verifySuccess,
+        message: deployMsg + "\n" + verifyMsg,
+      });
     } catch (e) {
       setDeployResult({ success: false, message: String(e) });
     }
@@ -139,9 +161,11 @@ export default function SettingsPanel({ isOpen, onClose, onConfigSaved }: Settin
             {deploying ? t("common.loading") : t("settings.deployAddons")}
           </button>
           {deployResult && (
-            <p className={`text-xs ${deployResult.success ? 'text-green-400' : 'text-red-400'}`}>
+            <div className={`text-xs ${deployResult.success ? 'text-green-400' : 'text-red-400'} whitespace-pre-wrap`}>
               {deployResult.success ? t("status.deployed") : t("status.deployError")}
-            </p>
+              <br />
+              <span className="opacity-70">{deployResult.message}</span>
+            </div>
           )}
         </div>
 

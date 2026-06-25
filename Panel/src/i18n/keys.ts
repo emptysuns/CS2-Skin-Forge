@@ -92,6 +92,11 @@ export const EN = {
   "status.reloaded": "Loadout reloaded! Respawn to apply.",
   "status.deployed": "Addons deployed successfully!",
   "status.deployError": "Failed to deploy addons",
+  "status.deployPartial": "{n} files deployed, {m} skipped",
+  "status.deployVerifyFailed": "Deploy verification failed: some files are missing or empty",
+  "status.pluginMissing": "Plugin files missing! Please deploy addons in Settings.",
+  "status.pluginVersionMismatch": "Panel updated! Plugin files may be outdated — please redeploy.",
+  "status.pluginAllGood": "Plugin files verified successfully.",
 
   // Common
   "common.loading": "Loading...",
@@ -109,6 +114,10 @@ export const EN = {
   "setup.title": "Setup Required",
   "setup.message": "CS2 installation path not configured. Please set it in Settings to deploy the plugin.",
   "setup.openSettings": "Open Settings",
+  "setup.pluginWarning": "Plugin Setup Required",
+  "setup.pluginWarningMessage": "Plugin files are missing or outdated. Please deploy addons in Settings to ensure proper functionality.",
+  "setup.deployNow": "Deploy Now",
+  "setup.remindLater": "Remind Later",
 } as const;
 
 export type I18nKey = keyof typeof EN;
