@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
+use tauri::Manager;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct StickerInfo {
@@ -154,12 +155,11 @@ const VERSION_FILE: &str = "plugin_version.txt";
 // Embedded plugin files — always available regardless of Tauri resource bundling.
 // build.rs creates a placeholder DLL if the real one hasn't been built yet.
 const EMBEDDED_DLL: &[u8] =
-    include_bytes!("../../../../addons/counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.dll");
-const EMBEDDED_MANIFEST: &[u8] = include_bytes!(
-    "../../../../addons/counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.json"
-);
+    include_bytes!("../../../addons/counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.dll");
+const EMBEDDED_MANIFEST: &[u8] =
+    include_bytes!("../../../addons/counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.json");
 const EMBEDDED_SKINS: &[u8] =
-    include_bytes!("../../../../addons/counterstrikesharp/plugins/PlayerSkinMod/skins_en.json");
+    include_bytes!("../../../addons/counterstrikesharp/plugins/PlayerSkinMod/skins_en.json");
 
 fn get_embedded_bytes(filename: &str) -> Option<&'static [u8]> {
     match filename {
