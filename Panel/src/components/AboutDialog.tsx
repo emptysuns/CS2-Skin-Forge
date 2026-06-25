@@ -36,7 +36,7 @@ export default function AboutDialog({ isOpen, onClose }: AboutDialogProps) {
           </div>
           <div>
             <h3 className="text-lg font-bold text-white">CS2 Skin Mod</h3>
-            <p className="text-xs text-gray-400">v1.5.13</p>
+            <p className="text-xs text-gray-400">v1.5.14</p>
           </div>
         </div>
 
