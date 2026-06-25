@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct StickerInfo {
@@ -150,6 +150,61 @@ fn get_plugin_dir_from_config() -> Result<PathBuf, String> {
 
 const PLUGIN_FILES: &[&str] = &["PlayerSkinMod.dll", "PlayerSkinMod.json", "skins_en.json"];
 const VERSION_FILE: &str = "plugin_version.txt";
+
+// Embedded plugin files — always available regardless of Tauri resource bundling.
+// build.rs creates a placeholder DLL if the real one hasn't been built yet.
+const EMBEDDED_DLL: &[u8] =
+    include_bytes!("../../../../addons/counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.dll");
+const EMBEDDED_MANIFEST: &[u8] = include_bytes!(
+    "../../../../addons/counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.json"
+);
+const EMBEDDED_SKINS: &[u8] =
+    include_bytes!("../../../../addons/counterstrikesharp/plugins/PlayerSkinMod/skins_en.json");
+
+fn get_embedded_bytes(filename: &str) -> Option<&'static [u8]> {
+    match filename {
+        "PlayerSkinMod.dll" => Some(EMBEDDED_DLL),
+        "PlayerSkinMod.json" => Some(EMBEDDED_MANIFEST),
+        "skins_en.json" => Some(EMBEDDED_SKINS),
+        _ => None,
+    }
+}
+
+/// Search for a source file in the resource directory, trying multiple layout variants.
+fn find_source_in_resources(resource_dir: &Path, filename: &str) -> Option<PathBuf> {
+    // Layout variants that different Tauri / platform bundlers produce:
+    let candidates: &[&[&str]] = &[
+        // Tauri 2 NSIS with directory structure preserved:
+        &["addons", "counterstrikesharp", "plugins", "PlayerSkinMod"],
+        // Tauri 2 flat resources (individual files):
+        &[],
+        // Tauri 2 resources with only the leaf directory name:
+        &["PlayerSkinMod"],
+        // Tauri < 2 / MSI style:
+        &[
+            "data",
+            "resources",
+            "addons",
+            "counterstrikesharp",
+            "plugins",
+            "PlayerSkinMod",
+        ],
+        // Top-level addons layout (some custom setups):
+        &["addons"],
+    ];
+
+    for parts in candidates {
+        let mut p = resource_dir.to_path_buf();
+        for part in *parts {
+            p.push(part);
+        }
+        p.push(filename);
+        if p.exists() && fs::metadata(&p).map(|m| m.len()).unwrap_or(0) > 0 {
+            return Some(p);
+        }
+    }
+    None
+}
 
 fn get_config_path() -> PathBuf {
     let mut path = dirs::config_dir().unwrap_or_else(|| PathBuf::from("."));
@@ -331,68 +386,47 @@ fn check_plugin_files() -> Result<PluginCheckResult, String> {
 }
 
 #[tauri::command]
-fn deploy_addons() -> Result<String, String> {
+fn deploy_addons(app: tauri::AppHandle) -> Result<String, String> {
     let target_dir = get_plugin_dir_from_config()?;
     fs::create_dir_all(&target_dir).map_err(|e| e.to_string())?;
 
-    let exe_dir = std::env::current_exe()
-        .map_err(|e| e.to_string())?
-        .parent()
-        .ok_or_else(|| "Cannot find resource directory".to_string())?
-        .to_path_buf();
-
-    // Possible resource locations (checked in priority order).
-    // Tauri NSIS installer bundles resources under _up_/_up_/resources/
-    // Tauri MSI / dev builds use resources/
-    let nsis_resource_dir = exe_dir
-        .join("data")
-        .join("resources")
-        .join("addons")
-        .join("counterstrikesharp")
-        .join("plugins")
-        .join("PlayerSkinMod");
-
-    let resource_subdir = exe_dir
-        .join("resources")
-        .join("addons")
-        .join("counterstrikesharp")
-        .join("plugins")
-        .join("PlayerSkinMod");
+    // Primary: use Tauri's official resource_dir API (works for all bundle types)
+    let resource_dir = app
+        .path()
+        .resource_dir()
+        .map_err(|e| format!("Cannot resolve resource directory: {}", e))?;
 
     let mut deployed = Vec::new();
     let mut skipped = Vec::new();
     let mut verify_failed = Vec::new();
+    let mut used_embedded = false;
 
     for file in PLUGIN_FILES {
-        // Try multiple possible resource locations (priority order)
-        let src = if nsis_resource_dir.join(file).exists() {
-            nsis_resource_dir.join(file)
-        } else if resource_subdir.join(file).exists() {
-            resource_subdir.join(file)
-        } else if exe_dir.join("resources").join(file).exists() {
-            exe_dir.join("resources").join(file)
-        } else {
-            // Next to exe itself
-            exe_dir.join(file)
-        };
+        // 1) Try to find the file in the resource directory
+        let src = find_source_in_resources(&resource_dir, file);
 
-        if src.exists() {
+        let src_size = src
+            .as_ref()
+            .and_then(|p| fs::metadata(p).ok())
+            .map(|m| m.len())
+            .unwrap_or(0);
+
+        if src.is_some() && src_size > 0 {
+            let src_path = src.unwrap();
             let dst = target_dir.join(file);
-            let src_size = fs::metadata(&src).map(|m| m.len()).unwrap_or(0);
             let dst_size = if dst.exists() {
                 fs::metadata(&dst).map(|m| m.len()).unwrap_or(0)
             } else {
                 0
             };
-            fs::copy(&src, &dst).map_err(|e| format!("Failed to copy {}: {}", file, e))?;
+            fs::copy(&src_path, &dst).map_err(|e| format!("Failed to copy {}: {}", file, e))?;
 
-            // Post-copy verification: ensure destination file exists and is not empty
             match fs::metadata(&dst) {
                 Ok(meta) if meta.len() > 0 => {
                     let msg = if dst_size > 0 {
-                        format!("{} ({}B -> {}B)", file, dst_size, src_size)
+                        format!("{} ({}B -> {}B, bundled)", file, dst_size, src_size)
                     } else {
-                        format!("{} ({}B, new)", file, src_size)
+                        format!("{} ({}B, bundled)", file, src_size)
                     };
                     deployed.push(msg);
                 }
@@ -403,18 +437,51 @@ fn deploy_addons() -> Result<String, String> {
                     ));
                 }
             }
+        } else if let Some(embedded) = get_embedded_bytes(file) {
+            // 2) Fallback: write from embedded bytes (always available)
+            if embedded.is_empty() {
+                skipped.push(format!(
+                    "{file} (embedded is a placeholder - real DLL missing)"
+                ));
+                continue;
+            }
+            let dst = target_dir.join(file);
+            let dst_size = if dst.exists() {
+                fs::metadata(&dst).map(|m| m.len()).unwrap_or(0)
+            } else {
+                0
+            };
+            fs::write(&dst, embedded)
+                .map_err(|e| format!("Failed to write {} from embedded: {}", file, e))?;
+
+            match fs::metadata(&dst) {
+                Ok(meta) if meta.len() > 0 => {
+                    let msg = if dst_size > 0 {
+                        format!("{} ({}B -> {}B, embedded)", file, dst_size, embedded.len())
+                    } else {
+                        format!("{} ({}B, embedded)", file, embedded.len())
+                    };
+                    deployed.push(msg);
+                    used_embedded = true;
+                }
+                _ => {
+                    verify_failed.push(format!(
+                        "{} (embedded write succeeded but destination is missing/empty)",
+                        file
+                    ));
+                }
+            }
         } else {
             skipped.push(file.to_string());
         }
     }
 
-    // Fail if nothing was deployed and no verify failures (true misdeploy)
     if deployed.is_empty() && verify_failed.is_empty() {
         return Err(format!(
-            "No plugin files found to deploy. Searched: {}, {}, {}",
-            nsis_resource_dir.display(),
-            resource_subdir.display(),
-            exe_dir.join("resources").display()
+            "No plugin files found to deploy.\n\
+             Resource dir: {}\n\
+             Searched layouts: [addons/.../PlayerSkinMod, flat, PlayerSkinMod/, data/resources/...]",
+            resource_dir.display()
         ));
     }
 
@@ -424,17 +491,14 @@ fn deploy_addons() -> Result<String, String> {
         target_dir.display()
     );
 
+    if used_embedded {
+        result.push_str(" | (from embedded)");
+    }
     if !verify_failed.is_empty() {
         result.push_str(&format!(" | Verify-failed: [{}]", verify_failed.join(", ")));
     }
     if !skipped.is_empty() {
-        result.push_str(&format!(" | Skipped (not found): [{}]", skipped.join(", ")));
-        result.push_str(&format!(
-            " | Searched: {}, {}, {}",
-            nsis_resource_dir.display(),
-            resource_subdir.display(),
-            exe_dir.join("resources").display()
-        ));
+        result.push_str(&format!(" | Skipped: [{}]", skipped.join(", ")));
     }
 
     // Write version file so we can detect panel-plugin version mismatch
