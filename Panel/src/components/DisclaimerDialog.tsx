@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useT } from '../i18n';
+import { openUrl } from "@tauri-apps/plugin-opener";
 
 const DISCLAIMER_KEY = 'cs2skinmod.disclaimer.accepted';
 
@@ -49,14 +50,12 @@ export default function DisclaimerDialog() {
               ? '请勿上当受骗，本软件完全免费开源。'
               : 'This software is completely free and open source. Do not pay for it.'}
           </p>
-          <a
-            href="https://github.com/emptysuns/CS2-Skin-Forge"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-400 hover:text-blue-300 underline text-xs block"
+          <span
+            onClick={() => openUrl("https://github.com/emptysuns/CS2-Skin-Forge")}
+            className="text-blue-400 hover:text-blue-300 underline text-xs block cursor-pointer"
           >
             github.com/emptysuns/CS2-Skin-Forge
-          </a>
+          </span>
         </div>
 
         <label className="flex items-center space-x-2 cursor-pointer">

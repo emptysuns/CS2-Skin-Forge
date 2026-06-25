@@ -1,4 +1,5 @@
 import { useT } from "../i18n";
+import { openUrl } from "@tauri-apps/plugin-opener";
 
 interface AboutDialogProps {
   isOpen: boolean;
@@ -11,7 +12,7 @@ export default function AboutDialog({ isOpen, onClose }: AboutDialogProps) {
   if (!isOpen) return null;
 
   const handleOpenGitHub = () => {
-    window.open("https://github.com/emptysuns/CS2-Skin-Forge", "_blank");
+    openUrl("https://github.com/emptysuns/CS2-Skin-Forge");
   };
 
   return (
@@ -35,7 +36,7 @@ export default function AboutDialog({ isOpen, onClose }: AboutDialogProps) {
           </div>
           <div>
             <h3 className="text-lg font-bold text-white">CS2 Skin Mod</h3>
-            <p className="text-xs text-gray-400">v1.5.10</p>
+            <p className="text-xs text-gray-400">v1.5.11</p>
           </div>
         </div>
 

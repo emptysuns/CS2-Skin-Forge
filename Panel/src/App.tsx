@@ -14,6 +14,7 @@ import DisclaimerDialog from './components/DisclaimerDialog';
 import { Loadout } from './utils/types';
 import { useT } from './i18n';
 import { api, type AppConfig, type PluginCheckResult } from './lib/api';
+import { openUrl } from "@tauri-apps/plugin-opener";
 
 const defaultLoadout: Loadout = {
   weaponPaints: {},
@@ -168,9 +169,12 @@ function App() {
       <StatusBar status={status} />
 
       <footer className="text-center text-[10px] text-gray-600 py-1">
-        <a href="https://github.com/emptysuns/CS2-Skin-Forge" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400 transition-colors">
+        <span
+          onClick={() => openUrl("https://github.com/emptysuns/CS2-Skin-Forge")}
+          className="hover:text-gray-400 transition-colors cursor-pointer"
+        >
           CS2 Skin Mod
-        </a>
+        </span>
         <span className="mx-1">•</span>
         <span>Open Source & Free · 开源免费软件 · 请勿上当受骗</span>
       </footer>
