@@ -4,6 +4,18 @@
 
 **[English Documentation](README.md)**
 
+## 演示
+
+以下截图来自搭配 [CS2-Bot-Improver](https://github.com/ed0ard/CS2-Bot-Improver) 插件的本地机器人对局：
+
+> CS2-Bot-Improver is a plugin for Counter-Strike 2 that improves bots' aim, movement, nade throwing, personalities, strategies, etc. Aims to enhance your experience when playing against bots offline or with friends. It can be installed on both clients and servers.
+
+![Demo 1](imgs/demo1.png)
+![Demo 2](imgs/demo2.png)
+![Demo 3](imgs/demo3.png)
+
+[点击查看更多演示截图](./screenshots.md)
+
 ## VAC 风险警告
 
 **重要：此插件会修改 CS2 游戏文件，并需要 `-insecure` 启动选项。**
@@ -16,6 +28,8 @@
 **但使用任何第三方软件与 CS2 都存在固有风险。** Valve 的反作弊系统（VAC）可能会标记修改过的游戏文件。作者不对可能发生的 VAC 封禁或账户限制承担任何责任。
 
 **使用风险自负。**
+
+> **安全提示：** 为保障账户安全，建议使用 Steam 小号来进行本地游戏。
 
 ## 功能特性
 

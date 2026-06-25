@@ -2,7 +2,19 @@
 
 A local-only skin customization plugin for Counter-Strike 2 that allows players to customize weapon skins, knives, gloves, agent models, and music kits.
 
-**[Chinese Documentation](README_CN.md)**
+**[中文说明](README_CN.md)**
+
+## Demo
+
+以下截图来自搭配 [CS2-Bot-Improver](https://github.com/ed0ard/CS2-Bot-Improver) 插件的本地机器人对局：
+
+> CS2-Bot-Improver is a plugin for Counter-Strike 2 that improves bots' aim, movement, nade throwing, personalities, strategies, etc. Aims to enhance your experience when playing against bots offline or with friends. It can be installed on both clients and servers.
+
+![Demo 1](imgs/demo1.png)
+![Demo 2](imgs/demo2.png)
+![Demo 3](imgs/demo3.png)
+
+[点击查看更多演示截图](./screenshots.md)
 
 ## VAC Risk Warning
 
@@ -16,6 +28,8 @@ While this plugin:
 **Using any third-party software with CS2 carries inherent risk.** Valve's anti-cheat system (VAC) may flag modified game files. The authors are **NOT responsible** for any VAC bans or account restrictions that may occur.
 
 **Use at your own risk.**
+
+> **Safety Tip:** For maximum safety, use a secondary Steam account when playing locally with this plugin.
 
 ## Features
 
