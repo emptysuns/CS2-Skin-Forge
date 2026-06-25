@@ -20,12 +20,31 @@ export function translate(lang: string | null, key: I18nKey, params?: TParams): 
 
 const LANGUAGE_KEY = "cs2skinmod.language";
 
-/** Get the saved language preference */
-export function getSavedLanguage(): string {
+/** Detect system language from navigator / OS. */
+function detectSystemLanguage(): string {
   try {
-    return localStorage.getItem(LANGUAGE_KEY) ?? "english";
+    // navigator.language gives e.g. "zh-CN", "ja", "ko-KR", "en-US"
+    const raw = (navigator.language || (navigator as any).userLanguage || "").toLowerCase();
+    if (raw.startsWith("zh")) {
+      if (raw.includes("tw") || raw.includes("hk") || raw.includes("mo") || raw === "zh-hant") {
+        return "tchinese";
+      }
+      return "schinese";
+    }
+    if (raw.startsWith("ja")) return "japanese";
+    if (raw.startsWith("ko")) return "koreana";
+    return "english";
   } catch {
     return "english";
+  }
+}
+
+/** Get the saved language preference, falling back to system detection. */
+export function getSavedLanguage(): string {
+  try {
+    return localStorage.getItem(LANGUAGE_KEY) ?? detectSystemLanguage();
+  } catch {
+    return detectSystemLanguage();
   }
 }
 

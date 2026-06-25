@@ -121,6 +121,7 @@ pub struct AppConfig {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PluginCheckResult {
     pub all_present: bool,
     pub missing_files: Vec<String>,
