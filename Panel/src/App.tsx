@@ -56,7 +56,6 @@ function App() {
   const [status, setStatus] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [showPluginWarning, setShowPluginWarning] = useState(false);
   const [pluginCheckResult, setPluginCheckResult] = useState<PluginCheckResult | null>(null);
-  const [pluginDismissed, setPluginDismissed] = useState(false);
 
   // Load config and saved loadout on mount
   useEffect(() => {
@@ -120,7 +119,6 @@ function App() {
 
   const handleDismissPluginWarning = () => {
     setShowPluginWarning(false);
-    setPluginDismissed(true);
   };
 
   const renderPanel = () => {
