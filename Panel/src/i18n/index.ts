@@ -33,6 +33,7 @@ function detectSystemLanguage(): string {
     }
     if (raw.startsWith("ja")) return "japanese";
     if (raw.startsWith("ko")) return "koreana";
+    if (raw.startsWith("ru")) return "russian";
     return "english";
   } catch {
     return "english";
@@ -64,6 +65,7 @@ export const LANGUAGES = [
   { code: "tchinese", label: "繁體中文", flag: "TW" },
   { code: "japanese", label: "日本語", flag: "JP" },
   { code: "koreana", label: "한국어", flag: "KR" },
+  { code: "russian", label: "Русский", flag: "RU" },
 ] as const;
 
 /** Hook returning a translator bound to the current language. */
