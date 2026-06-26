@@ -107,9 +107,9 @@
 
 ### 增强机器人体验（推荐）
 
-为了获得最佳的机器人对战体验，我们推荐配合使用 [CS2-Bot-Improver](https://github.com/ed0ard/CS2-Bot-Improver)。由于面板在部署插件时会自动安装 CounterStrikeSharp，CS2-Bot-Improver 将拥有所需的框架 —— 只需将机器人插件安装到 CS2 的 addons 目录，即可获得更智能、更有挑战性的机器人。
+为了获得最佳的机器人对战体验，我们推荐配合使用 [CS2-Bot-Improver](https://github.com/ed0ard/CS2-Bot-Improver)。
 
-> **提示：** 建议先部署我们的插件（会自动安装 CounterStrikeSharp），然后再安装 CS2-Bot-Improver。
+> **提示：** 建议先安装 CS2-Bot-Improver —— 它也会自动部署 CounterStrikeSharp 框架。之后再安装我们的换肤插件，它会检测到已有的 CounterStrikeSharp，仅部署自身的模组文件。
 
 ### 工作原理
 

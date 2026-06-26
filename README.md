@@ -107,9 +107,9 @@ Install and launch the application.
 
 ### Enhanced Bot Experience (Recommended)
 
-For the best experience with bot matches, we recommend using [CS2-Bot-Improver](https://github.com/ed0ard/CS2-Bot-Improver) alongside this plugin. Since the panel automatically installs CounterStrikeSharp when you deploy addons, CS2-Bot-Improver will have the framework it needs — just install the bot plugin to your CS2 addons directory for smarter, more challenging bots.
+For the best experience with bot matches, we recommend using [CS2-Bot-Improver](https://github.com/ed0ard/CS2-Bot-Improver) alongside this plugin.
 
-> **Tip:** We recommend deploying our plugin first (which auto-installs CounterStrikeSharp), then installing CS2-Bot-Improver.
+> **Tip:** We recommend installing CS2-Bot-Improver first — it also deploys the CounterStrikeSharp framework automatically. Then install our skin plugin — it will detect the existing CounterStrikeSharp and only deploy its own mod files.
 
 ### How It Works
 
