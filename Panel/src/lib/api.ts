@@ -64,6 +64,7 @@ export interface PluginCheckResult {
   versionMismatch: boolean;
   deployedVersion: string | null;
   panelVersion: string;
+  counterstrikesharpInstalled: boolean;
 }
 
 export const api = {

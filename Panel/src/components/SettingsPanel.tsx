@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useT } from "../i18n";
-import { api, type AppConfig } from "../lib/api";
+import { api, type AppConfig, type PluginCheckResult } from "../lib/api";
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -15,11 +15,22 @@ export default function SettingsPanel({ isOpen, onClose, onConfigSaved }: Settin
   const [saving, setSaving] = useState(false);
   const [deploying, setDeploying] = useState(false);
   const [deployResult, setDeployResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [pluginStatus, setPluginStatus] = useState<PluginCheckResult | null>(null);
+
+  const refreshStatus = async () => {
+    try {
+      const check = await api.checkPluginFiles();
+      setPluginStatus(check);
+    } catch {
+      setPluginStatus(null);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
       api.getConfig().then(setConfig).catch(console.error);
       setDeployResult(null);
+      refreshStatus();
     }
   }, [isOpen]);
 
@@ -69,6 +80,7 @@ export default function SettingsPanel({ isOpen, onClose, onConfigSaved }: Settin
         } else {
           verifyMsg = t("status.pluginAllGood");
         }
+        setPluginStatus(check);
       } catch {
         verifyMsg = t("status.deployError");
         verifySuccess = false;
@@ -168,6 +180,37 @@ export default function SettingsPanel({ isOpen, onClose, onConfigSaved }: Settin
             </div>
           )}
         </div>
+
+        {/* Plugin Status */}
+        {pluginStatus && (
+          <div className="space-y-1.5 px-3 py-2 bg-gray-800/30 rounded-lg border border-gray-700/30">
+            <p className="text-xs font-medium text-gray-400">Plugin Status</p>
+            <div className="flex items-center gap-2 text-xs">
+              <span className={pluginStatus.counterstrikesharpInstalled ? "text-green-400" : "text-red-400"}>
+                {pluginStatus.counterstrikesharpInstalled ? "✓" : "✗"}
+              </span>
+              <span className="text-gray-300">CounterStrikeSharp</span>
+              <span className="text-gray-500">
+                {pluginStatus.counterstrikesharpInstalled ? "(installed)" : "(not installed — auto-deployed on click)"}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <span className={pluginStatus.allPresent ? "text-green-400" : "text-red-400"}>
+                {pluginStatus.allPresent ? "✓" : "✗"}
+              </span>
+              <span className="text-gray-300">PlayerSkinMod</span>
+              <span className="text-gray-500">
+                {pluginStatus.allPresent
+                  ? `(v${pluginStatus.deployedVersion || "?"})`
+                  : pluginStatus.missingFiles.length > 0
+                    ? `(missing: ${pluginStatus.missingFiles.join(", ")})`
+                    : pluginStatus.versionMismatch
+                      ? "(version mismatch — redeploy)"
+                      : "(unknown)"}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex gap-3 pt-2">

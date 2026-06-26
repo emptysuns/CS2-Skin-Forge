@@ -44,14 +44,14 @@
 - **随机模式**：每次重生随机选择皮肤
 - **自定义模式**：精确选择每个皮肤
 - **桌面面板**：原生 Tauri 应用，方便自定义
-- **多语言支持**：English、简体中文、繁體中文、日本語、한국어
+- **多语言支持**：English、简体中文、繁體中文、日本語、한국어、Русский
 
 ## 安装说明
 
 ### 前提条件
 
 1. 已安装反恐精英2
-2. 已在 CS2 服务器/客户端安装 CounterStrikeSharp
+2. CounterStrikeSharp — 点击"部署插件"时面板会自动检测并安装，无需手动操作。
 
 ### 第一步：下载并安装面板
 
@@ -67,7 +67,7 @@
 1. 启动 CS2 Skin Mod Panel
 2. 点击右上角齿轮图标进入 **设置**
 3. 设置 CS2 路径（例如 `C:\Program Files (x86)\Steam\steamapps\common\Counter-Strike Global Offensive\game\csgo`）
-4. 点击 **"部署插件"** -- 插件文件将自动复制到 CS2 目录
+4. 点击 **"部署插件"** -- 此操作会自动安装 CounterStrikeSharp（如缺失）并将插件文件复制到 CS2 目录
 
 ### 第三步：配置 CS2 启动选项
 
@@ -107,7 +107,9 @@
 
 ### 增强机器人体验（推荐）
 
-为了获得最佳的机器人对战体验，我们推荐配合使用 [CS2-Bot-Improver](https://github.com/ed0ard/CS2-Bot-Improver)。将其安装到 CS2 服务器的 CounterStrikeSharp 插件目录，可以获得更智能、更有挑战性的机器人。
+为了获得最佳的机器人对战体验，我们推荐配合使用 [CS2-Bot-Improver](https://github.com/ed0ard/CS2-Bot-Improver)。由于面板在部署插件时会自动安装 CounterStrikeSharp，CS2-Bot-Improver 将拥有所需的框架 —— 只需将机器人插件安装到 CS2 的 addons 目录，即可获得更智能、更有挑战性的机器人。
+
+> **提示：** 建议先部署我们的插件（会自动安装 CounterStrikeSharp），然后再安装 CS2-Bot-Improver。
 
 ### 工作原理
 
@@ -133,6 +135,7 @@
 - 繁體中文
 - 日本語
 - 한국어
+- Русский
 
 ## 从源码构建
 
@@ -162,7 +165,7 @@ npm run tauri build
 ### 皮肤不显示
 
 1. 验证启动选项中包含 `-insecure`
-2. 确保 CounterStrikeSharp 已安装
+2. 确保 CounterStrikeSharp 已安装（在设置中点击"部署插件"即可自动安装）
 3. 确保在设置中正确设置了 CS2 路径
 4. 点击"部署插件"确保插件已安装
 5. 应用更改后重生

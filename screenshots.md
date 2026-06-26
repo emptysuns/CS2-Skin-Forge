@@ -2,7 +2,7 @@
 
 Additional screenshots from local bot matches using [CS2-Bot-Improver](https://github.com/ed0ard/CS2-Bot-Improver).
 
-[Back to README](./README.md)
+[Back to README (English)](./README.md) | [中文说明](./README_CN.md) | [Русский](./README_RU.md)
 
 ---
 

@@ -129,6 +129,7 @@ pub struct PluginCheckResult {
     pub version_mismatch: bool,
     pub deployed_version: Option<String>,
     pub panel_version: String,
+    pub counterstrikesharp_installed: bool,
 }
 
 /// Read the CS2 path from config and return the PlayerSkinMod plugin directory.
@@ -156,9 +157,8 @@ const VERSION_FILE: &str = "plugin_version.txt";
 // build.rs creates a placeholder DLL if the real one hasn't been built yet.
 const EMBEDDED_DLL: &[u8] =
     include_bytes!("../../../addons/counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.dll");
-const EMBEDDED_MANIFEST: &[u8] = include_bytes!(
-    "../../../addons/counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.json"
-);
+const EMBEDDED_MANIFEST: &[u8] =
+    include_bytes!("../../../addons/counterstrikesharp/plugins/PlayerSkinMod/PlayerSkinMod.json");
 const EMBEDDED_SKINS: &[u8] =
     include_bytes!("../../../addons/counterstrikesharp/plugins/PlayerSkinMod/skins_en.json");
 
@@ -205,6 +205,95 @@ fn find_source_in_resources(resource_dir: &Path, filename: &str) -> Option<PathB
         }
     }
     None
+}
+
+/// Check whether CounterStrikeSharp is installed at the given CS2 path.
+fn check_counterstrikesharp(cs2_path: &Path) -> bool {
+    let api_dir = cs2_path
+        .join("addons")
+        .join("counterstrikesharp")
+        .join("api");
+    if !api_dir.exists() {
+        return false;
+    }
+    if cfg!(target_os = "windows") {
+        api_dir.join("CounterStrikeSharp.API.dll").exists()
+    } else {
+        api_dir.join("CounterStrikeSharp.API.so").exists()
+    }
+}
+
+/// Deploy CounterStrikeSharp automatically — downloads the latest release from GitHub
+/// and extracts it into the CS2 game directory.
+fn deploy_counterstrikesharp(cs2_path: &Path) -> Result<String, String> {
+    let platform_zip = if cfg!(target_os = "windows") {
+        "counterstrikesharp-windows"
+    } else {
+        "counterstrikesharp-linux"
+    };
+
+    // 1. Fetch the latest release tag from GitHub API.
+    let api_url = "https://api.github.com/repos/roflmuffin/CounterStrikeSharp/releases/latest";
+    let resp = ureq::get(api_url)
+        .set("User-Agent", "CS2-Skin-Forge/auto-deploy")
+        .call()
+        .map_err(|e| format!("Failed to query GitHub API: {}", e))?;
+    let json: serde_json::Value = resp
+        .into_json()
+        .map_err(|e| format!("Failed to parse API response: {}", e))?;
+    let tag = json["tag_name"]
+        .as_str()
+        .ok_or_else(|| "Missing tag_name in release".to_string())?;
+    let version = tag.strip_prefix('v').unwrap_or(tag);
+
+    // 2. Build download URL.
+    let dl_url = format!(
+        "https://github.com/roflmuffin/CounterStrikeSharp/releases/download/{tag}/{platform_zip}-{version}.zip"
+    );
+
+    // 3. Download the zip into memory.
+    let resp = ureq::get(&dl_url)
+        .set("User-Agent", "CS2-Skin-Forge/auto-deploy")
+        .call()
+        .map_err(|e| format!("Failed to download CounterStrikeSharp: {}", e))?;
+    let mut zip_bytes: Vec<u8> = Vec::new();
+    resp.into_reader()
+        .read_to_end(&mut zip_bytes)
+        .map_err(|e| format!("Failed to read download: {}", e))?;
+    if zip_bytes.is_empty() {
+        return Err("Downloaded zip is empty.".to_string());
+    }
+
+    // 4. Extract the zip to the CS2 path.
+    let cursor = std::io::Cursor::new(zip_bytes);
+    let mut archive =
+        zip::ZipArchive::new(cursor).map_err(|e| format!("Failed to open zip: {}", e))?;
+
+    for i in 0..archive.len() {
+        let mut file = archive
+            .by_index(i)
+            .map_err(|e| format!("Failed to read zip entry {i}: {e}"))?;
+        let Some(out_path) = file.enclosed_name() else {
+            continue;
+        };
+        let dest = cs2_path.join(&out_path);
+        if file.is_dir() {
+            fs::create_dir_all(&dest).ok();
+        } else {
+            if let Some(parent) = dest.parent() {
+                fs::create_dir_all(parent).ok();
+            }
+            let mut outfile = fs::File::create(&dest)
+                .map_err(|e| format!("Failed to create {}: {}", dest.display(), e))?;
+            std::io::copy(&mut file, &mut outfile)
+                .map_err(|e| format!("Failed to extract {}: {}", dest.display(), e))?;
+        }
+    }
+
+    Ok(format!(
+        "CounterStrikeSharp {} installed successfully.",
+        tag
+    ))
 }
 
 fn get_config_path() -> PathBuf {
@@ -350,9 +439,19 @@ fn check_plugin_files() -> Result<PluginCheckResult, String> {
                 version_mismatch: false,
                 deployed_version: None,
                 panel_version,
+                counterstrikesharp_installed: false,
             });
         }
     };
+
+    // Figure out CS2 path from plugin dir (go up from plugins/PlayerSkinMod to game dir)
+    let cs2_path = plugin_dir
+        .parent()
+        .and_then(|p| p.parent())
+        .and_then(|p| p.parent())
+        .and_then(|p| p.parent())
+        .unwrap_or_else(|| Path::new(""));
+    let css_installed = check_counterstrikesharp(cs2_path);
 
     // Check each required plugin file
     let mut missing_files: Vec<String> = Vec::new();
@@ -383,6 +482,7 @@ fn check_plugin_files() -> Result<PluginCheckResult, String> {
         version_mismatch,
         deployed_version,
         panel_version,
+        counterstrikesharp_installed: css_installed,
     })
 }
 
@@ -390,6 +490,23 @@ fn check_plugin_files() -> Result<PluginCheckResult, String> {
 fn deploy_addons(app: tauri::AppHandle) -> Result<String, String> {
     let target_dir = get_plugin_dir_from_config()?;
     fs::create_dir_all(&target_dir).map_err(|e| e.to_string())?;
+
+    // Determine CS2 game directory (go up from .../plugins/PlayerSkinMod to game dir)
+    let cs2_path = target_dir
+        .parent()
+        .and_then(|p| p.parent())
+        .and_then(|p| p.parent())
+        .and_then(|p| p.parent())
+        .ok_or_else(|| "Cannot determine CS2 game directory".to_string())?;
+
+    // Auto-deploy CounterStrikeSharp if missing
+    let mut css_result = String::new();
+    if !check_counterstrikesharp(cs2_path) {
+        match deploy_counterstrikesharp(cs2_path) {
+            Ok(msg) => css_result = format!(" | CounterStrikeSharp: {}", msg),
+            Err(e) => css_result = format!(" | CounterStrikeSharp: download failed ({})", e),
+        }
+    }
 
     // Primary: use Tauri's official resource_dir API (works for all bundle types)
     let resource_dir = app
@@ -500,6 +617,9 @@ fn deploy_addons(app: tauri::AppHandle) -> Result<String, String> {
     }
     if !skipped.is_empty() {
         result.push_str(&format!(" | Skipped: [{}]", skipped.join(", ")));
+    }
+    if !css_result.is_empty() {
+        result.push_str(&css_result);
     }
 
     // Write version file so we can detect panel-plugin version mismatch

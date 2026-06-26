@@ -203,7 +203,9 @@ function App() {
                 ? t("status.pluginMissing")
                 : pluginCheckResult.versionMismatch
                   ? t("status.pluginVersionMismatch")
-                  : t("setup.pluginWarningMessage")}
+                  : !pluginCheckResult.counterstrikesharpInstalled
+                    ? "CounterStrikeSharp is not installed. Click 'Deploy Now' to auto-install it along with the plugin."
+                    : t("setup.pluginWarningMessage")}
             </p>
             {pluginCheckResult.missingFiles.length > 0 && (
               <div className="text-xs text-red-400 bg-red-900/20 rounded-lg p-2">
@@ -218,6 +220,11 @@ function App() {
                 {t("status.pluginVersionMismatch")}
                 <br />
                 Panel: v{pluginCheckResult.panelVersion} | Deployed: {pluginCheckResult.deployedVersion || t("common.error")}
+              </div>
+            )}
+            {!pluginCheckResult.counterstrikesharpInstalled && (
+              <div className="text-xs text-yellow-400 bg-yellow-900/20 rounded-lg p-2">
+                CounterStrikeSharp is not installed. The panel will automatically download and install it when you deploy addons.
               </div>
             )}
             <div className="flex gap-3 pt-2">

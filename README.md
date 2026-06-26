@@ -6,7 +6,7 @@ A local-only skin customization plugin for Counter-Strike 2 that allows players 
 
 ## Demo
 
-以下截图来自搭配 [CS2-Bot-Improver](https://github.com/ed0ard/CS2-Bot-Improver) 插件的本地机器人对局：
+The following screenshots are from local bot matches using the [CS2-Bot-Improver](https://github.com/ed0ard/CS2-Bot-Improver) plugin:
 
 > CS2-Bot-Improver is a plugin for Counter-Strike 2 that improves bots' aim, movement, nade throwing, personalities, strategies, etc. Aims to enhance your experience when playing against bots offline or with friends. It can be installed on both clients and servers.
 
@@ -14,7 +14,7 @@ A local-only skin customization plugin for Counter-Strike 2 that allows players 
 ![Demo 2](imgs/demo2.png)
 ![Demo 3](imgs/demo3.png)
 
-[点击查看更多演示截图](./screenshots.md)
+[Click to view more demo screenshots](./screenshots.md)
 
 ## VAC Risk Warning
 
@@ -44,14 +44,14 @@ While this plugin:
 - **Random Mode**: Randomize all skins on each spawn
 - **Custom Mode**: Mix and match specific skins
 - **Desktop Panel**: Native Tauri application for easy customization
-- **Multi-language**: English, Simplified Chinese, Traditional Chinese, Japanese, Korean
+- **Multi-language**: English, Simplified Chinese, Traditional Chinese, Japanese, Korean, Russian
 
 ## Installation
 
 ### Prerequisites
 
 1. Counter-Strike 2 installed
-2. CounterStrikeSharp installed on your CS2 server/client
+2. CounterStrikeSharp — the panel will automatically detect and install it for you when you click "Deploy Addons". No manual installation required.
 
 ### Step 1: Download and install the panel
 
@@ -67,7 +67,7 @@ Install and launch the application.
 1. Launch the CS2 Skin Mod Panel
 2. Go to **Settings** (gear icon in top-right)
 3. Set your CS2 path (e.g. `C:\Program Files (x86)\Steam\steamapps\common\Counter-Strike Global Offensive\game\csgo`)
-4. Click **"Deploy Addons"** -- this copies the plugin files to your CS2 directory automatically
+4. Click **"Deploy Addons"** -- this automatically installs CounterStrikeSharp (if missing) and copies the plugin files to your CS2 directory
 
 ### Step 3: Configure CS2 Launch Options
 
@@ -107,7 +107,9 @@ Install and launch the application.
 
 ### Enhanced Bot Experience (Recommended)
 
-For the best experience with bot matches, we recommend using [CS2-Bot-Improver](https://github.com/ed0ard/CS2-Bot-Improver) alongside this plugin. Install it to your CS2 server's CounterStrikeSharp plugins directory for smarter, more challenging bots.
+For the best experience with bot matches, we recommend using [CS2-Bot-Improver](https://github.com/ed0ard/CS2-Bot-Improver) alongside this plugin. Since the panel automatically installs CounterStrikeSharp when you deploy addons, CS2-Bot-Improver will have the framework it needs — just install the bot plugin to your CS2 addons directory for smarter, more challenging bots.
+
+> **Tip:** We recommend deploying our plugin first (which auto-installs CounterStrikeSharp), then installing CS2-Bot-Improver.
 
 ### How It Works
 
@@ -133,6 +135,7 @@ The panel supports multiple languages. Click the Settings icon to change between
 - Traditional Chinese
 - Japanese
 - Korean
+- Russian
 
 ## Building from Source
 
@@ -162,7 +165,7 @@ npm run tauri build
 ### Skins not showing
 
 1. Verify `-insecure` is in launch options
-2. Ensure CounterStrikeSharp is installed
+2. Ensure CounterStrikeSharp is installed (click "Deploy Addons" in Settings to auto-install it)
 3. Make sure you set the correct CS2 path in Settings
 4. Click "Deploy Addons" to ensure the plugin is installed
 5. Respawn after applying changes
